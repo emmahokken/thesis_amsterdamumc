@@ -69,7 +69,7 @@ i=iSubj;
       inds = j;
       fieldinds = subj(inds);
       sigm_plot = []; sigm_mean_plot=[]; 
-      sigm_recon=[]; sigm_gt=[];
+      sigm_corr=[]; sigm_uncorr=[];
       mot_plot = []; mot_mean_plot=[];
       k = 1;
       fieldind = fieldinds(k);
@@ -87,9 +87,9 @@ i=iSubj;
       sigm_mean_plot(k)=FWHM*median(tmp);
       uplot(k)=FWHM*nanmedian(u);
       tmp=AR{fieldind}.sigmarecon(validboth{fieldind}>0);       % sigma after
-      sigm_recon(k)=FWHM*median(tmp);
+      sigm_corr(k)=FWHM*median(tmp);
       tmp=AR{fieldind}.sigmagt(validboth{fieldind}>0);       % sigma after
-      sigm_gt(k)=FWHM*median(tmp);
+      sigm_uncorr(k)=FWHM*median(tmp);
       mot_mean_plot(k) = (mot_mean{fieldind});
       mot_add = ones(sum(signif),1)*mot_mean{fieldind}; 
       mot_plot = cat(2,mot_plot,mot_add');

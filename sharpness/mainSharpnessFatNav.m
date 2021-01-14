@@ -80,7 +80,7 @@ for ii=subj_ii
     getsigmaclusterFatNav(map_recon,data_recon,data_gt,pars,field_name,plotsavedir);
   % get motion parameters
   numcl(ii) = length(better_signed{ii});
-  mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
+  mot_mean{ii} = getmotionFatNav(map_reconall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
 
 %% compute and print statistics
