@@ -105,7 +105,8 @@ i=iSubj;
   allsigmagt = cat(2,allsigmagt,plot_sigma_gt);
   allmotion = cat(2,allmotion,plot_motion);
   
-csigma=csigma(doSubj); cu=cu(doSubj);
+csigma=csigma(doSubj); 
+cu=cu(doSubj);
 
 %%
 

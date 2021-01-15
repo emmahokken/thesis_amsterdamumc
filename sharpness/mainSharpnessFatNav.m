@@ -39,8 +39,8 @@ mkdir(plotsavedir)
 FileID.uIDs={'000'};
 
 % define ROIs to process
-%FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-FileID.uROIs = {'vent'};
+FileID.uROIs = {'vent', 'tha', 'str','gwb'};
+% FileID.uROIs = {'vent'};
 
 
 FileID.uHEMs = {'l', 'r','4'};
