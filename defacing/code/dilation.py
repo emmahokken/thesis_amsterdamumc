@@ -23,7 +23,7 @@ test_scan = 'Subcortex_0054_054_R02'
 kernel = np.ones((5,5), dtype=np.uint8)
 iters = 13
 wrong = 0
-f = nib.load(f'{root_path}/{test_scan}/nii/{brain_mask_type}.nii')
+# f = nib.load(f'{root_path}/{test_scan}/nii/{brain_mask_type}.nii.gz')
 
 # ah = nib.load("../../../../../data/projects/ahead/raw_gdata/Subcortex_0054_054_R02/nii/mask_inv2_te2_m_corr.nii")
 # exit()
@@ -43,13 +43,28 @@ for subdir, dirs, files in os.walk(root_path):
         except:
         # except nib.filebasedimages.ImageFileError:
             # print('things went wrong')
-            wrong += 1
-            wrong_files.append(d)
+            try:
+                brain_mask_nii = nib.load(brain_mask_path + '.gz')
+                brain_mask = brain_mask_nii.get_fdata()
+                inv2_nii = nib.load(path)
+                inv2 = inv2_nii.get_fdata()
+            except:
+                try: 
+                    brain_mask_nii = nib.load(brain_mask_path + '.gz')
+                    brain_mask = brain_mask_nii.get_fdata()
+                    inv2_nii = nib.load(path + '.gz')
+                    inv2 = inv2_nii.get_fdata()
+                except:
+                    wrong += 1
+                    wrong_files.append(d)
 
-        # # dilate brain mask and fill in with (second inversion) scan 
-        # dilation = cv2.dilate(brain_mask, kernel, iterations=iters)
-        # filled_in = dilation*inv2
-        
+        # dilate brain mask
+        dilation = cv2.dilate(brain_mask, kernel, iterations=iters)
+
+        # smooth edges and fill in with (second inversion) scan 
+        gaus_dilation = cv2.GaussianBlur(dilation, (5,5), 0)
+        filled_in = inv2*gaus_dilation
+
         # # save new scan 
         # if not os.path.exists(f'{save_path}/{d}'):
         #     os.makedirs(f'{save_path}/{d}')
@@ -62,3 +77,6 @@ for subdir, dirs, files in os.walk(root_path):
 
 
 print(f'things went wrong {wrong} times')
+print(wrong_files)
+
+nib.load(f'{root_path}/{wrong_files[0]}/nii/{brain_mask_type}.nii')
