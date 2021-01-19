@@ -192,8 +192,8 @@ for p = 1:2
         legend('hide')
         xlabel(''); ylabel('')
     end
-    filename = [field_name, '_',ctag,'_profiles'];
-    ...
+    name = [field_name, '_',ctag,'_profiles'];
+    filename = fullfile(plotsavedir,[name '.png']);
     disp(['Creating ' filename])
     print(filename,'-dpng','-r300')
     close(f)
@@ -214,7 +214,7 @@ er = err_comp{1};
 sg = sigma_comp{2};
 eg = err_comp{2};
 sigma_diff_abs = validboth.*sqrt(abs(sg.^2-sr.^2));
-signed_indication = 2.*((sg.^2-sr.^2)>0)-1 % 1 if better, -1 if worse
+signed_indication = 2.*((sg.^2-sr.^2)>0)-1; % 1 if better, -1 if worse
 sigma_diff_signed = signed_indication.*sigma_diff_abs;
 
 better_signed = validboth.*sigma_diff_signed.*((sg-eg)>(sr+er));
