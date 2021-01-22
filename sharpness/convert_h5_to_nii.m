@@ -1,16 +1,15 @@
-files = {'test_all_3_ssim/','test_all_6_ssim/','test_all_9_ssim/','test_all_12_ssim/','test_all_15_ssim/'};
+acceleration_factors = {'test_all_3_ssim/','test_all_6_ssim/','test_all_9_ssim/','test_all_12_ssim/','test_all_15_ssim/'};
 datadir = '../../../../data/projects/recon/data/qMRI/Brain_MEGRE/';
-scanname = 'Subcortex_0005_axial_121.h5';
-niidir = '../../data/recon/';
 datasets = {'qMRI_GT', 'qMRI_RIM'};
+niidir = '../../data/recon/';
 
 % iterate over files 
-for i=1:length(files)
+for i=1:length(acceleration_factors)
     % select acceleration factor file 
-    acc = files{i};
+    acc = acceleration_factors{i};
 
     % create new directory to save files
-    mkdir(strcat(niidir,files{i}));
+    mkdir(strcat(niidir,acceleration_factors{i}));
     accdir = strcat(datadir, acc);
     
     % get all files in acceleration directory 
