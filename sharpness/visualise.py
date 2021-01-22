@@ -8,7 +8,10 @@ tha = 'data/segm/sub-mask-tha_hem-r_lvlreg-corr_def-img.nii'
 ants = 'data/segm/sub-t1corr_cruise-gwb_ants-def0.nii' 
 ants2 = 'data/segm/sub-t1uncorr_cruise-gwb_ants-def0.nii'
 r1 = 'data/r1corr.nii'
-f = nib.load(r1).get_fdata()
+test_nii = '../../data/recon/test_all_3_ssim/Subcortex_0005_axial_121.nii'
+f = nib.load(test_nii).get_fdata()
 
-plt.imshow(f[:,:,64], cmap='gray')
+print(f.shape)
+
+plt.imshow(f[:,:,0], cmap='gray')
 plt.show()
