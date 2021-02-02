@@ -17,7 +17,7 @@ save_path = '../defacing/dilation'
 subject = 'Subcortex_0004_002_R02'
 
 kernel_five = np.ones((5,5), dtype=np.uint8)
-kernel_twenty = np.ones((50,50), dtype=np.uint8)
+kernel_twenty = np.ones((61,61), dtype=np.uint8)
 
 brain_mask_path = f'{root_path}/{subject}/nii/{brain_mask_type}.nii'
 scan_path = f'{root_path}/{subject}/nii/{scan_type}.nii'
@@ -46,7 +46,7 @@ ax[0].axis('off')
 ax[0].set_title('5x5 kernel, 15 iterations')
 ax[1].imshow(ndimage.rotate(dilation_twenty[:,:,63], 90), cmap='gray')
 ax[1].axis('off')
-ax[1].set_title('20x20 kernel, 1 iterations')
+ax[1].set_title('50x50 kernel, 1 iterations')
 plt.show()
 
 exit()
