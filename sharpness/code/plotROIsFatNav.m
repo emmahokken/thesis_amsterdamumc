@@ -6,17 +6,24 @@ nsubj=length(FileID.uIDs);
 p_thresh=1.1; % intensity threshold for images
 
 savedir=fullfile(plotsavedir,'ROIs_anat');
+disp(savedir)
 mkdir(savedir)
-
-for iSubj=1:nsubj
+disp(nsubj)
+for iSubj=1:2
+    disp(FileID.uIDs{iSubj})
+    disp(fields)
    subj = find(~cellfun(@isempty,strfind(fields,FileID.uIDs{iSubj})))';
+   disp(subj)
+   disp('aadfa')
    cl=hsv(length(subj));
    idx=0;
+   
    for iROI=subj
      idx=idx+1;
      map_recon = map_reconall.(fields{iROI}).img;
      p=(map_recon<0) .* (map_recon>-2);
      p=p>0;
+     disp(idx)
      if idx==1
        ROImap=double(p);
      else

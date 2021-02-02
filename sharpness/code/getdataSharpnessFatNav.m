@@ -12,14 +12,14 @@ if nargin==3
   doR1=varargin{1};
 end
 if doR1
-  filetag='r1';    
+  filetag='rim_r1';    
 else
   filetag='t1';
 end
 disp(filetag)
 cortag='gwb';
 
-lbldir = fullfile(subjdir,'segm');
+lbldir = fullfile(subjdir,'segm/cropped');
 
 datadir = subjdir;
 
@@ -28,9 +28,11 @@ cd(subjdir)
 mparsname = dir('mpars.mat');
 mpars = load(char(mparsname.name));
 ID = strcat(char('sub-'),FileID.uIDs{1});
-ID = char('sub-');
+ID = char('sub-064_');
 id = strcat('s',FileID.uIDs{1});
-
+disp(id)
+disp('fieldid')
+disp(FileID.uROIs)
 % Iterate over the ROIs
 for iROI = 1:length(FileID.uROIs)  
     if strcmp(FileID.uROIs{iROI},cortag)
@@ -38,6 +40,7 @@ for iROI = 1:length(FileID.uROIs)
     else
       ROI = strcat(char('mask-'),FileID.uROIs{iROI});
     end
+    disp(ROI)
     roi = FileID.uROIs{iROI};
     % Iterate over hemispheres 
     for iHEM = 1:length(FileID.uHEMs)
@@ -55,6 +58,7 @@ for iROI = 1:length(FileID.uROIs)
         HEM = strcat(char('hem-'),FileID.uHEMs{iHEM});
         hem = FileID.uHEMs{iHEM};
         nm = strcat(id,roi,hem);
+        disp(nm)
         % Load uncorrected and corrected data
         cd(datadir) 
         % Change this to the reconstructed images instead of the motion

@@ -36,7 +36,7 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.uIDs={'000'};
+FileID.uIDs={'064'};
 
 % define ROIs to process
 FileID.uROIs = {'vent', 'tha', 'str','gwb'};
