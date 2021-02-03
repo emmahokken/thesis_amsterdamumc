@@ -14,6 +14,7 @@ max_R3 = pars.region(4);
 k_R3 = pars.numIcl;
 cluster_size = pars.numpoints;
 
+
 mask=and(data_recon>0,data_gt>0);
 frac=sum(mask(:))/numel(mask);
 disp(['Union mask of data_recon and data_gt percentage: ' num2str(frac)])

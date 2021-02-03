@@ -1,17 +1,37 @@
 import nibabel as nib 
 import matplotlib.pyplot as plt 
 import numpy as np
+import os
+from tqdm import tqdm
 
-striatum = 'data/segm/sub-mask-str_hem-l_lvlreg-uncorr_def-img.nii'
-vent4 = 'data/segm/sub-mask-vent_hem-4_lvlreg-uncorr_def-img.nii'
-tha = 'data/segm/sub-mask-tha_hem-r_lvlreg-corr_def-img.nii'
-ants = 'data/segm/sub-t1corr_cruise-gwb_ants-def0.nii' 
-ants2 = 'data/segm/sub-t1uncorr_cruise-gwb_ants-def0.nii'
-r1 = 'data/r1corr.nii'
-test_nii = '../../data/recon/test_all_3_ssim/Subcortex_0005_axial_121.nii'
-f = nib.load(test_nii).get_fdata()
+subj = 64
+base = '../../../../..'
+segm_path = f'/data/projects/ahead/segmentations/mapped/'
+inv2_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R02/nii/inv2_te1_m_corr.nii'
+r1corr_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R02/nii/r1corr.nii'
+recon_nii_path = f'../../data/recon/test_all_3_ssim/R2star_map_rim/results_Subcortex_00{subj}_axial_loss_mse.nii'
+brain_mask_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R02/nii/mask_inv2_te2_m_corr.nii'
 
-print(f.shape)
+# load in main images 
+inv2 = nib.load(inv2_path).get_fdata()
+r1corr = nib.load(r1corr_path).get_fdata()
+
+# iterate over all segmentations
+for subdir, dirs, files in os.walk(base+segm_path):
+    for file in tqdm(files):
+        if f'sub-0{subj}_mask' in file:
+            s_nii = nib.load(base+segm_path+file)
+            s = s_nii.get_fdata()
+
+            # create mask of segmentation
+            s[s > 0] = 0
+            s[s < 0] = 1
+
+            plt.imshow(s[:,:,140])
+            plt.plot(np.linspace(0,200))
+            plt.show()
+
+            exit()
 
 plt.imshow(f[:,:,0], cmap='gray')
 plt.show()

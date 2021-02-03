@@ -14,8 +14,9 @@ max_R3 = pars.region(4);
 k_R3 = pars.numIcl;
 cluster_size = pars.numpoints;
 
+
 mask=and(data_recon>0,data_gt>0);
-frac=sum(mask(:))/numel(mask);
+frac=sum(mask(:))/numel(mask)
 disp(['Union mask of data_recon and data_gt percentage: ' num2str(frac)])
 % mask data
 data_recon(~mask)=0;
@@ -28,7 +29,7 @@ data = data_recon;
 map(~mask)=mapInf; %saturate padding zeroes in map
 
 % Define scaling factors and scale data
-scale_I = pars.wI./prctile(nonzeros(data.*(map<max_R3)),90);
+scale_I = pars.wI./prctile(nonzeros(data.*(map<max_R3)),90)
 scale_c = max(size(map)); % used later on
 data = scale_I.*data;
 
@@ -192,8 +193,8 @@ for p = 1:2
         legend('hide')
         xlabel(''); ylabel('')
     end
-    filename = [field_name, '_',ctag,'_profiles'];
-    ...
+    name = [field_name, '_',ctag,'_profiles'];
+    filename = fullfile(plotsavedir,[name '.png']);
     disp(['Creating ' filename])
     print(filename,'-dpng','-r300')
     close(f)
@@ -214,7 +215,7 @@ er = err_comp{1};
 sg = sigma_comp{2};
 eg = err_comp{2};
 sigma_diff_abs = validboth.*sqrt(abs(sg.^2-sr.^2));
-signed_indication = 2.*((sg.^2-sr.^2)>0)-1 % 1 if better, -1 if worse
+signed_indication = 2.*((sg.^2-sr.^2)>0)-1; % 1 if better, -1 if worse
 sigma_diff_signed = signed_indication.*sigma_diff_abs;
 
 better_signed = validboth.*sigma_diff_signed.*((sg-eg)>(sr+er));
