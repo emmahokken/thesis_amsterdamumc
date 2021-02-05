@@ -1,7 +1,10 @@
+import cv2 
 import nibabel as nib 
 import matplotlib.pyplot as plt 
+import matplotlib.cm as cm 
 import numpy as np
 import os
+from scipy import ndimage
 from tqdm import tqdm
 
 subj = 64
@@ -16,22 +19,47 @@ brain_mask_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R0
 inv2 = nib.load(inv2_path).get_fdata()
 r1corr = nib.load(r1corr_path).get_fdata()
 
-# iterate over all segmentations
+kernel = np.array([[1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1], [1,1,1,1,1]])
+
+fig, ax = plt.subplots(1,2)
+z = 149
+
+
+# iterate over all ROIs
 for subdir, dirs, files in os.walk(base+segm_path):
-    for file in tqdm(files):
-        if f'sub-0{subj}_mask' in file:
-            s_nii = nib.load(base+segm_path+file)
-            s = s_nii.get_fdata()
 
-            # create mask of segmentation
-            s[s > 0] = 0
-            s[s < 0] = 1
+    # create color range for scatter 
+    files = [f for f in files if f'sub-0{subj}_mask' in f]
+    colours = cm.rainbow(np.linspace(0, 1, len(files)))
 
-            plt.imshow(s[:,:,140])
-            plt.plot(np.linspace(0,200))
-            plt.show()
+    for i, file in tqdm(enumerate(files)):
+        s_nii = nib.load(base+segm_path+file)
+        s = s_nii.get_fdata()
 
-            exit()
+        # create mask of segmentation
+        s[s > 0] = 0
+        s[s < 0] = 1
+        
+        # calculate boundary locations for mask
+        distance = ndimage.distance_transform_cdt(s[:,:,z], 'taxicab') == 1
+        boundary_idx = np.vstack(np.where(distance == 1))
 
-plt.imshow(f[:,:,0], cmap='gray')
+        # zip x and y axes 
+        # boundary = list(zip(boundary_idx[0], boundary_idx[1]))
+
+        # create label for ROI
+        names = file.split('-')
+        roi, _ = names[2].split('_')
+        hem = names[3][0]
+        side = 'left' if hem == 'l' else 'right' if hem == 'r' else 'fourth'
+        
+        ax[0].scatter(boundary_idx[0], boundary_idx[1], color=colours[i], s=0.3, marker='o', label=f'{roi}, {side}')
+        ax[1].scatter(boundary_idx[1], boundary_idx[0], color=colours[i], s=0.3, marker='o', label=f'{roi}, {side}')
+
+    break 
+       
+ax[0].imshow(inv2[:,:,z], cmap='gray')
+ax[1].imshow(ndimage.rotate(inv2[:,:,z], 90), cmap='gray')
+# plt.axis('off')
+plt.legend(loc='upper left', bbox_to_anchor=(1,1))
 plt.show()
