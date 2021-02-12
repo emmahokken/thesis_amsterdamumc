@@ -78,9 +78,27 @@ for ii=subj_ii
   % do fitting
   [better_signed{ii},worse_signed{ii},brd_crds{ii},brd_ind{ii},AR{ii}] = ...
     getsigmaclusterFatNav(map_corr,data_corr,data_uncorr,pars,field_name,plotsavedir);
+    disp(size(better_signed(ii)))
+    if better_signed(ii) == 0
+        better_signed(ii) = [];
+        worse_signed(ii) = [];
+        brd_crds(ii) = [];
+        brd_ind(ii) = [];
+        AR(ii) = [];
+        continue
+    end
+disp('sigma fithgs')
+   disp( better_signed(ii))
+   disp(worse_signed(ii))
+   disp(brd_crds(ii)), 
+   disp(brd_ind(ii))
+   disp(AR(ii))
   % get motion parameters
   numcl(ii) = length(better_signed{ii});
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
+  disp('motion params')
+  disp(numcl(ii))
+  disp(mot_mean(ii))
 end
 
 %% compute and print statistics

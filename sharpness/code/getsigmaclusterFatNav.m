@@ -59,7 +59,16 @@ coords_R3 = cat(2, x_R3, y_R3, z_R3)./scale_c;
 disp('kmeans size')
 disp(size(cat(2,coords_R3,I_R3_sm)))
 kar = cat(2,coords_R3,I_R3_sm);
-sum(any(~isnan(kar), 1))
+if sum(any(~isnan(kar), 1)) < 4
+    disp('Too many NaN values --> ROI lies outside of reconstructed image.')
+    better_signed = 0;
+    worse_signed = 0;
+    brd_crds = 0;
+    brd_ind = 0;
+    AddRes = 0;
+    return
+end
+
 % First kmeans-clustering: on intensity value
 ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
 ind_R3subcl = ind_R3; % used for subclustering. 

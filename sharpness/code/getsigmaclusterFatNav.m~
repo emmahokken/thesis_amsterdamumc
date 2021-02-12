@@ -60,7 +60,10 @@ disp('kmeans size')
 disp(size(cat(2,coords_R3,I_R3_sm)))
 kar = cat(2,coords_R3,I_R3_sm);
 if sum(any(~isnan(kar), 1)) < 4
-    disp("ROI lies outside of reconstructed region."0
+    disp('Too many NaN values --> ROI lies outside of reconstructed image.')
+    return
+end
+
 % First kmeans-clustering: on intensity value
 ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
 ind_R3subcl = ind_R3; % used for subclustering. 
