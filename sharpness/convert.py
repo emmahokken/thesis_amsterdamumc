@@ -33,21 +33,23 @@ t1uncorr_cruise_nii = nib.load(base+t1uncorr_cruise_path)
 t1corr_cruise = t1corr_cruise_nii.get_fdata()
 t1uncorr_cruise = t1uncorr_cruise_nii.get_fdata()
 
-t1corr_cruise = t1corr_cruise[:,121:171,:]
-t1uncorr_cruise = t1uncorr_cruise[:,121:171,:]
 
-# save t1corr and t1uncorr maps 
-nifti_image = nib.Nifti1Image(dataobj=t1corr_cruise, header=t1corr_cruise_nii.header, affine=t1corr_cruise_nii.affine)
-nib.save(img=nifti_image, filename=save_path+'/'+t1corr_cruise_path.split('/')[-1])
-nifti_image = nib.Nifti1Image(dataobj=t1uncorr_cruise, header=t1uncorr_cruise_nii.header, affine=t1uncorr_cruise_nii.affine)
-nib.save(img=nifti_image, filename=save_path+'/'+t1uncorr_cruise_path.split('/')[-1])
+start = 121
+stop = 171
 
-exit()
+t1corr_cruise = t1corr_cruise[:,start:stop,:]
+t1uncorr_cruise = t1uncorr_cruise[:,start:stop,:]
 
-# rearange segmented image to be in same line as recon rim image.
-r_nii = np.moveaxis(r_nii, 0, -1)
-nifti_image = nib.Nifti1Image(dataobj=r_nii, header=recon_nii.header, affine=recon_nii.affine)
-nib.save(img=nifti_image, filename='data/rim_r1corr.nii')
+# # save t1corr and t1uncorr maps 
+# nifti_image = nib.Nifti1Image(dataobj=t1corr_cruise, header=t1corr_cruise_nii.header, affine=t1corr_cruise_nii.affine)
+# nib.save(img=nifti_image, filename=save_path+'/'+t1corr_cruise_path.split('/')[-1])
+# nifti_image = nib.Nifti1Image(dataobj=t1uncorr_cruise, header=t1uncorr_cruise_nii.header, affine=t1uncorr_cruise_nii.affine)
+# nib.save(img=nifti_image, filename=save_path+'/'+t1uncorr_cruise_path.split('/')[-1])
+
+# # rearange segmented image to be in same line as recon rim image.
+# r_nii = np.moveaxis(r_nii, 0, -1)
+# nifti_image = nib.Nifti1Image(dataobj=r_nii, header=recon_nii.header, affine=recon_nii.affine)
+# nib.save(img=nifti_image, filename='data/rim_r1corr.nii')
 
 
 for subdir, dirs, files in os.walk(segm_path):
@@ -55,22 +57,18 @@ for subdir, dirs, files in os.walk(segm_path):
         if f'sub-0{subj}_mask' in file:
             s_nii = nib.load(segm_path+file)
             s = s_nii.get_fdata()
-            s = s[:,121:171,:]
-            print(s.shape)
-            exit()
+            s = s[:,start:stop,:]
+            
+            # print(s[:20,:20,:20])
+            s = np.flip(s,axis=0)
+            
             # save new scan 
             if not os.path.exists(f'{save_path}'):
                 os.makedirs(f'{save_path}')
             save_dir = f'{save_path}/{file[:-3]}'
-            print(save_dir)
            
             nifti_image = nib.Nifti1Image(dataobj=s, header=s_nii.header, affine=s_nii.affine)
             nib.save(img=nifti_image, filename=save_dir)
-
-
-
-test = recon_nii[:,:,20]
-
 
 segm[segm > 0] = 0
 segm[segm < 0] = 1

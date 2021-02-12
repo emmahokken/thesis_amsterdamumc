@@ -1,4 +1,4 @@
-function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_recon, data_recon, data_gt, pars, field_name, plotsavedir )
+function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_corr, data_corr, data_uncorr, pars, field_name, plotsavedir )
 % Calculate sigma for every point near border.
 warning off 
 
@@ -14,22 +14,21 @@ max_R3 = pars.region(4);
 k_R3 = pars.numIcl;
 cluster_size = pars.numpoints;
 
-
-mask=and(data_recon>0,data_gt>0);
-frac=sum(mask(:))/numel(mask)
-disp(['Union mask of data_recon and data_gt percentage: ' num2str(frac)])
+mask=and(data_corr>0,data_uncorr>0);
+frac=sum(mask(:))/numel(mask);
+disp(['Union mask of data_corr and data_uncorr percentage: ' num2str(frac)])
 % mask data
-data_recon(~mask)=0;
-data_gt(~mask)=0;
+data_corr(~mask)=0;
+data_uncorr(~mask)=0;
 
-% Load and scale data. Clustering is done on reconstructed data. Can be changed
-% to ground truth data.
-map = map_recon;
-data = data_recon;
+% Load and scale data. Clustering is done on corrected data. Can be changed
+% to uncorrected data.
+map = map_corr;
+data = data_corr;
 map(~mask)=mapInf; %saturate padding zeroes in map
 
 % Define scaling factors and scale data
-scale_I = pars.wI./prctile(nonzeros(data.*(map<max_R3)),90)
+scale_I = pars.wI./prctile(nonzeros(data.*(map<max_R3)),90);
 scale_c = max(size(map)); % used later on
 data = scale_I.*data;
 
@@ -57,6 +56,11 @@ coords_R2 = cat(2, x_R2, y_R2, z_R2)./scale_c;
 coords_R3 = cat(2, x_R3, y_R3, z_R3)./scale_c;
 
 %% Clustering
+disp('kmeans size')
+disp(size(cat(2,coords_R3,I_R3_sm)))
+kar = cat(2,coords_R3,I_R3_sm);
+if sum(any(~isnan(kar), 1)) < 4
+    disp("ROI lies outside of reconstructed region."0
 % First kmeans-clustering: on intensity value
 ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
 ind_R3subcl = ind_R3; % used for subclustering. 
@@ -104,15 +108,14 @@ err_comp = cell(1,2);
 valid_comp = cell(1,2);
 n_invalid = zeros(1,2);
 aggregates = cell(1,2);
-
 for p = 1:2
-    map = map_recon; % map_recon is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
+    map = map_corr; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
     if p==1
-        data = data_recon;
-        ctag='recon'
+        data = data_corr;
+        ctag='corr'
     else
-        data = data_gt;
-        ctag='gt'
+        data = data_uncorr;
+        ctag='uncorr'
     end
     map(~mask)=mapInf;
 
@@ -181,7 +184,6 @@ for p = 1:2
     else
         i_max = k_tot;
     end
-    % Plotting 
     for i = 1:i_max
         subplot_tight(4,5,i,.02)
         plot(prof_fit{i}(:,1),prof_fit{i}(:,2),'.','color',colors(valid(i)+1,:), ...
@@ -207,31 +209,31 @@ for p = 1:2
     aggregates{p} = aggregate;
 end
 
-%% Compare reconstructed and grount truth data
+%% Compare corrected and uncorrected data
 
 validboth = valid_comp{1}.*valid_comp{2};
-sr = sigma_comp{1};
-er = err_comp{1};
-sg = sigma_comp{2};
-eg = err_comp{2};
-sigma_diff_abs = validboth.*sqrt(abs(sg.^2-sr.^2));
-signed_indication = 2.*((sg.^2-sr.^2)>0)-1; % 1 if better, -1 if worse
+sc = sigma_comp{1};
+ec = err_comp{1};
+su = sigma_comp{2};
+eu = err_comp{2};
+sigma_diff_abs = validboth.*sqrt(abs(su.^2-sc.^2));
+signed_indication = 2.*((su.^2-sc.^2)>0)-1; % 1 if better, -1 if worse
 sigma_diff_signed = signed_indication.*sigma_diff_abs;
 
-better_signed = validboth.*sigma_diff_signed.*((sg-eg)>(sr+er));
-worse_signed = validboth.*sigma_diff_signed.*((sr-er)>(sg+eg));
-unc = sqrt(abs(1./(sg.^2-sr.^2).*(sg.^2.*eg.^2+sr.^2.*er.^2)));
+better_signed = validboth.*sigma_diff_signed.*((su-eu)>(sc+ec));
+worse_signed = validboth.*sigma_diff_signed.*((sc-ec)>(su+eu));
+unc = sqrt(abs(1./(su.^2-sc.^2).*(su.^2.*eu.^2+sc.^2.*ec.^2)));
 
-%% Store additional resultes 
+%% Store additional results 
 
 AddRes.('crdindicesR1') = indsR1; % coordinate indices of R1
 AddRes.('indR1') = ind_R1; % cluster indication of subclusters
 AddRes.('Iinds') = I_inds; % cluster indication of intensity clusters
 
-AddRes.('sigmarecon') = sigma_comp{1}; % sigma for corrected data
-AddRes.('errrecon') = err_comp{1}; % fit error for corrected data
-AddRes.('sigmagt') = sigma_comp{2}; % sigma for uncorrected data
-AddRes.('errgt') = err_comp{2}; % fit error for uncorrected data
+AddRes.('sigmacorr') = sigma_comp{1}; % sigma for corrected data
+AddRes.('errcorr') = err_comp{1}; % fit error for corrected data
+AddRes.('sigmauncorr') = sigma_comp{2}; % sigma for uncorrected data
+AddRes.('erruncorr') = err_comp{2}; % fit error for uncorrected data
 AddRes.('sigmadiff') = sigma_diff_abs; % absolute squared difference in sigma
 AddRes.('sigmadiff_signed') = sigma_diff_signed; % signed squared difference in sigma
 AddRes.('uncertainty') = unc; % uncertainty. Not sure if it is relevant

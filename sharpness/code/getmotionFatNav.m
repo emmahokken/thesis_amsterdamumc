@@ -1,5 +1,5 @@
 function [ mot_mean ] = getmotionFatNav( map_corr, brd_crds, MPos, voxRes)
-% Calculates motion in ROIs as displacement
+%Calculates motion in ROIs as displacement
 
 G = gradientvector(map_corr);
 G_matx = im2mat(G{1});

@@ -39,14 +39,14 @@ mkdir(plotsavedir)
 FileID.uIDs={'064'};
 
 % define ROIs to process
-FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-% FileID.uROIs = {'vent'};
+% FileID.uROIs = {'vent', 'tha', 'str','gwb'};
+FileID.uROIs = {'vent'};
 
 
 FileID.uHEMs = {'l', 'r','4'};
-[map_reconall, t1_reconall, map_gtall, t1_gtall, MPos, voxRes] = ...
+[map_corrall, t1_corrall, map_uncorrall, t1_uncorrall, MPos, voxRes] = ...
   getdataSharpnessFatNav(FileID, subjdir, 1);
-fields = fieldnames(map_reconall);
+fields = fieldnames(map_corrall);
 
 % parameters
 run getParsFatNav
@@ -69,18 +69,18 @@ for ii=subj_ii
   % get data
   field_name = fields{ii};
   disp(field_name)
-  map_recon = map_reconall.(fields{ii}).img;
-  data_recon = t1_reconall.(fields{ii});
+  map_corr = map_corrall.(fields{ii}).img;
+  data_corr = t1_corrall.(fields{ii});
 
-  map_gt = map_gtall.(fields{ii}).img;
-  data_gt = t1_gtall.(fields{ii});
+  map_uncorr = map_uncorrall.(fields{ii}).img;
+  data_uncorr = t1_uncorrall.(fields{ii});
 
   % do fitting
   [better_signed{ii},worse_signed{ii},brd_crds{ii},brd_ind{ii},AR{ii}] = ...
-    getsigmaclusterFatNav(map_recon,data_recon,data_gt,pars,field_name,plotsavedir);
+    getsigmaclusterFatNav(map_corr,data_corr,data_uncorr,pars,field_name,plotsavedir);
   % get motion parameters
   numcl(ii) = length(better_signed{ii});
-  mot_mean{ii} = getmotionFatNav(map_reconall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
+  mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
 
 %% compute and print statistics
