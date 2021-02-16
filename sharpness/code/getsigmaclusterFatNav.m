@@ -61,11 +61,11 @@ disp(size(cat(2,coords_R3,I_R3_sm)))
 kar = cat(2,coords_R3,I_R3_sm);
 if sum(any(~isnan(kar), 1)) < 4
     disp('Too many NaN values --> ROI lies outside of reconstructed image.')
-    better_signed = 0;
-    worse_signed = 0;
-    brd_crds = 0;
-    brd_ind = 0;
-    AddRes = 0;
+    better_signed = 'outside';
+    worse_signed = 'outside';
+    brd_crds = 'outside';
+    brd_ind = 'outside';
+    AddRes = 'outside';
     return
 end
 

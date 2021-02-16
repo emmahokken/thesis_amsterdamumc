@@ -3,9 +3,7 @@ FWHM=0.7*2.355; % conversion sigma to FWHM, given imaging resolution of 0.7 mm
 
 %% calculate some pre-stats
 CRthresh=pars.mrelcb;
-nROI = nUsedROI;
-disp(nROI)
-disp(nUsedROI)
+nUsedROI = nROI;
 % first corr, then uncorr
 for ii=1:length(AR)
   if ~isempty(AR{ii})
@@ -56,8 +54,6 @@ for ii=1:length(AR)
   ln(ii)=length(AR{ii}.sigmacorr);
   end
 end
-
-disp(ln)
 ln=reshape(ln,nROI,[]);
 
 

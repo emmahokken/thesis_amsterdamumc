@@ -96,9 +96,8 @@ for ii=subj_ii
   disp(numcl(ii))
   disp(mot_mean(ii))
 end
-
 if length(AR) ~= nUsedROI
-    AR(nUsedROI+1:end) = [];
+    AR = AR());
 end 
 disp(AR)
 disp('end')
