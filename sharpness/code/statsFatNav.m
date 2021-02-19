@@ -117,9 +117,9 @@ csigma=csigma(doSubj); cu=cu(doSubj);
 disp('ROIs:')
 disp(fields')
 
-disp('FWHM uncorrected:')
+disp('FWHM ground truth:')
 disp(num2str(allsigmauncorr))
-disp('FWHM corrected:')
+disp('FWHM reconstructed (rim):')
 disp(num2str(allsigmacorr))
 disp('FWHM difference:')
 disp(num2str(allsigma))

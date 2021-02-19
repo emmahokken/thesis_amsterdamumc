@@ -56,10 +56,9 @@ coords_R2 = cat(2, x_R2, y_R2, z_R2)./scale_c;
 coords_R3 = cat(2, x_R3, y_R3, z_R3)./scale_c;
 
 %% Clustering
-disp('kmeans size')
-disp(size(cat(2,coords_R3,I_R3_sm)))
-kar = cat(2,coords_R3,I_R3_sm);
-if sum(any(~isnan(kar), 1)) < 4
+% check whether ROI lies inside of brain slab
+nPotClusters = cat(2,coords_R3,I_R3_sm);
+if sum(any(~isnan(nPotClusters), 1)) < 4
     disp('Too many NaN values --> ROI lies outside of reconstructed image.')
     better_signed = 'outside';
     worse_signed = 'outside';
@@ -120,10 +119,10 @@ for p = 1:2
     map = map_corr; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
     if p==1
         data = data_corr;
-        ctag='corr'
+        ctag='corr';
     else
         data = data_uncorr;
-        ctag='uncorr'
+        ctag='uncorr';
     end
     map(~mask)=mapInf;
 

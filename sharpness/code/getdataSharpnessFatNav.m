@@ -53,12 +53,11 @@ for iROI = 1:length(FileID.uROIs)
         
         % Load uncorrected and corrected data
         cd(datadir)  
-        filenamecorr = [FileID.uIDs{1}, '_', filetag,'corr.nii'];
-        filenamecorr
+        filenamecorr = [FileID.uIDs{1}, '_', FileID.type{1},'_rim.nii'];
         tmp=load_untouch_nii(filenamecorr);
         voxRes=double(tmp.hdr.dime.dim(2:4));
         subj_data_corr.(nm)=tmp.img;
-        filenameuncorr = [FileID.uIDs{1},'_',filetag,'uncorr.nii'];
+        filenameuncorr = [FileID.uIDs{1},'_',FileID.type{1},'_gt.nii'];
         tmp=load_untouch_nii(filenameuncorr);
         subj_data_uncorr.(nm)=tmp.img;
 

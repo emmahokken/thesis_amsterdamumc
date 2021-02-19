@@ -17,21 +17,49 @@ t1corr_cruise_path = f'/data/projects/ahead/segmentations/cortex/sub-0{subj}_t1c
 t1uncorr_cruise_path = f'/data/projects/ahead/segmentations/cortex/sub-0{subj}_t1uncorr_cruise-gwb_ants-def0.nii'
 save_path = 'data/segm/cropped'
 
-segm = nib.load(base+segm_path+spec_segm).get_fdata()
-recon_nii = nib.load(recon_nii_path)
-r_nii = recon_nii.get_fdata()
-recon_h5 = h5py.File(base+recon_h5_path, 'r')
-recon_rim = recon_h5['R2star_map_gt']
-recon_mask = recon_h5['mask_brain']
-brain_mask = nib.load(base+brain_mask_path).get_fdata()
-sharp = nib.load(sharpness_path).get_fdata()
-sta = nib.load('data/segm/sub-t1corr_cruise-gwb_ants-def0.nii').get_fdata()
+# segm = nib.load(base+segm_path+spec_segm).get_fdata()
+# recon_nii = nib.load(recon_nii_path)
+# r_nii = recon_nii.get_fdata()
+# recon_h5 = h5py.File(base+recon_h5_path, 'r')
+# recon_rim = recon_h5['R2star_map_gt']
+# recon_mask = recon_h5['mask_brain']
+# brain_mask = nib.load(base+brain_mask_path).get_fdata()
+# sharp = nib.load(sharpness_path).get_fdata()
+# sta = nib.load('data/segm/sub-t1corr_cruise-gwb_ants-def0.nii').get_fdata()
 
-# crop grey white barrier t1corr map 
-t1corr_cruise_nii = nib.load(base+t1corr_cruise_path)
-t1uncorr_cruise_nii = nib.load(base+t1uncorr_cruise_path)
-t1corr_cruise = t1corr_cruise_nii.get_fdata()
-t1uncorr_cruise = t1uncorr_cruise_nii.get_fdata()
+# # crop grey white barrier t1corr map 
+# t1corr_cruise_nii = nib.load(base+t1corr_cruise_path)
+# t1uncorr_cruise_nii = nib.load(base+t1uncorr_cruise_path)
+# t1corr_cruise = t1corr_cruise_nii.get_fdata()
+# t1uncorr_cruise = t1uncorr_cruise_nii.get_fdata()
+
+reconscan = nib.load('data/064_r1corr.nii').get_fdata()
+fig, ax = plt.subplots(3,4)
+ax[0,0].imshow(reconscan[:,:,50], cmap='gray')
+ax[0,0].axis('off')
+ax[0,1].imshow(reconscan[:,:,100], cmap='gray')
+ax[0,1].axis('off')
+ax[0,2].imshow(reconscan[:,:,150], cmap='gray')
+ax[0,2].axis('off')
+ax[0,3].imshow(reconscan[:,:,200], cmap='gray')
+ax[0,3].axis('off')
+ax[1,0].imshow(reconscan[:,10,:], cmap='gray')
+ax[1,0].axis('off')
+ax[1,1].imshow(reconscan[:,20,:], cmap='gray')
+ax[1,1].axis('off')
+ax[1,2].imshow(reconscan[:,30,:], cmap='gray')
+ax[1,2].axis('off')
+ax[1,3].imshow(reconscan[:,40,:], cmap='gray')
+ax[1,3].axis('off')
+ax[2,0].imshow(reconscan[50,:,:], cmap='gray')
+ax[2,0].axis('off')
+ax[2,1].imshow(reconscan[100,:,:], cmap='gray')
+ax[2,1].axis('off')
+ax[2,2].imshow(reconscan[150,:,:], cmap='gray')
+ax[2,2].axis('off')
+ax[2,3].imshow(reconscan[200,:,:], cmap='gray')
+ax[2,3].axis('off')
+plt.show()
 
 
 start = 121
