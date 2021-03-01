@@ -14,6 +14,11 @@ max_R3 = pars.region(4);
 k_R3 = pars.numIcl;
 cluster_size = pars.numpoints;
 
+% permute if using orignal data
+% data_uncorr = permute(data_uncorr,[3 1 2]);
+
+disp(size(data_corr))
+disp(size(data_uncorr))
 mask=and(data_corr>0,data_uncorr>0);
 frac=sum(mask(:))/numel(mask);
 disp(['Union mask of data_corr and data_uncorr percentage: ' num2str(frac)])

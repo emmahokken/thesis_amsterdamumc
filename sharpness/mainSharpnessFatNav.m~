@@ -25,7 +25,7 @@ if isempty(which('load_untouch_nii'))
   error('Install load_untouch_nii')
 end
 
-maindir=fileparts(which('mainSharpnessFatNav.m'))
+maindir=fileparts(which('mainSharpnessFatNav.m'));
 subjdir=fullfile(maindir,'data');
 codedir=fullfile(maindir,'code');
 addpath(codedir)
@@ -92,10 +92,20 @@ for ii=subj_ii
   numcl(ii) = length(better_signed{ii});
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
-nROI
+disp('lenghts')
+disp(length(AR))
+nUsedROI
 if length(AR) ~= nUsedROI
-    disp(size(better_signed))
+    disp(size(mot_mean))
+    disp(mot_mean)
+    better_signed
+    better_signed(~cellfun('isempty',better_signed));
+    
+    worse_signed(;
+    brd_crds(nUsedROI+1:end) = [];
+    brd_ind(nUsedROI+1:end) = [];
     AR(nUsedROI+1:end) = [];
+    
 end 
 %% compute and print statistics
 run statsFatNav

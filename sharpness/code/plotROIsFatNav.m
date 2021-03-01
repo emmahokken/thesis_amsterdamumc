@@ -33,7 +33,7 @@ for iSubj=1:nsubj
    tmp=tmp/max(tmp(:));
    
    % permute to show reconsttucted images properly 
-   tmp=permute(tmp,[1 3 2 4]);
+%    tmp=permute(tmp,[1 3 2 4]);
    %ims=im2mat(arr(rgb(tmp(50:10:200,:,:,:)))); 
    %ima=im2mat(arr(rgb(tmp(:,:,:,:)))); 
    imc=im2mat(arr(rgb(tmp(:,:,:,:)))); 

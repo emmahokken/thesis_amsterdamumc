@@ -3,9 +3,7 @@ FWHM=0.7*2.355; % conversion sigma to FWHM, given imaging resolution of 0.7 mm
 
 %% calculate some pre-stats
 CRthresh=pars.mrelcb;
-nROI = nUsedROI;
-disp(nROI)
-disp(nUsedROI)
+
 % first corr, then uncorr
 for ii=1:length(AR)
   if ~isempty(AR{ii})
@@ -16,7 +14,7 @@ for ii=1:length(AR)
     medcb(ii,:)=[nanmedian(cbuncorr) nanmedian(cbcorr)];
 
     % update aggregate test score (binary)
-    tmp=abs(AR{ii}.aggregates{1}); 
+    tmp=abs(AR{ii}.aggregates{1});
     tmp4=tmp>=4;
     tmp=mod(tmp,4);
     test=abs(cbcorr)>CRthresh;
@@ -47,6 +45,8 @@ end
 nROI=length(mot_mean)/nsubj;
 % relative nr of valid clusters
 relvalid=cellfun(@sum,validboth)./cellfun(@length,validboth);
+disp('relisize')
+disp(size(relvalid))
 relvalid=reshape(relvalid,nROI,[]);
 
 % number of clusters
@@ -57,7 +57,6 @@ for ii=1:length(AR)
   end
 end
 
-disp(ln)
 ln=reshape(ln,nROI,[]);
 
 
@@ -78,10 +77,16 @@ i=iSubj;
       mot_plot = []; mot_mean_plot=[];
       k = 1;
       fieldind = fieldinds(k);
-      sigm_data = better_signed{fieldind}+worse_signed{fieldind};
-      signif = better_signed{fieldind}|worse_signed{fieldind};
-      tmp=sigma_diff_signed{fieldind}(validboth{fieldind}>0);
-      u=uncertainty{fieldind}(validboth{fieldind}>0);
+      sigm_data = better_signed{fieldind}+worse_signed{fieldind}
+      signif = better_signed{fieldind}|worse_signed{fieldind}
+      tmp=sigma_diff_signed{fieldind}(validboth{fieldind}>0)
+      fieldind
+      sigma_diff_signed{fieldind}
+      validboth{fieldind}
+      validboth{fieldind}>0
+      
+      
+      u=uncertainty{fieldind}(validboth{fieldind}>0)
       try
         csigma{i}=cat(2,csigma{i},FWHM*tmp);
         cu{i}=cat(2,cu{i},FWHM*u);
@@ -91,19 +96,27 @@ i=iSubj;
       end
       sigm_mean_plot(k)=FWHM*median(tmp);
       uplot(k)=FWHM*nanmedian(u);
-      tmp=AR{fieldind}.sigmacorr(validboth{fieldind}>0);       % sigma after
+      tmp=AR{fieldind}.sigmacorr(validboth{fieldind}>0);     % sigma after
       sigm_corr(k)=FWHM*median(tmp);
       tmp=AR{fieldind}.sigmauncorr(validboth{fieldind}>0);       % sigma after
       sigm_uncorr(k)=FWHM*median(tmp);
       mot_mean_plot(k) = (mot_mean{fieldind});
       mot_add = ones(sum(signif),1)*mot_mean{fieldind}; 
       mot_plot = cat(2,mot_plot,mot_add');
-      plot_sigma = cat(2,plot_sigma,sigm_mean_plot);
+      plot_sigma = cat(2,plot_sigma,sigm_mean_plot)
+   
       plot_u=cat(2,plot_u,uplot);
       plot_motion = cat(2,plot_motion,mot_mean_plot);
       plot_sigma_corr = cat(2,plot_sigma_corr,sigm_corr);
       plot_sigma_uncorr = cat(2,plot_sigma_uncorr,sigm_uncorr);
+      hold off
+      plot(plot_sigma_corr);
+      hold on
+      plot(plot_sigma_uncorr);
+      legend('rim', 'gt');
+      hold off
   end
+  
   allsigma = cat(2,allsigma,plot_sigma);
   allu=cat(2,allu,plot_u);
   allsigmacorr = cat(2,allsigmacorr,plot_sigma_corr);

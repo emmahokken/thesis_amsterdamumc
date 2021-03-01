@@ -40,8 +40,8 @@ FileID.uIDs={'064'};
 FileID.type={'r2star'};
 
 % define ROIs to process
-% FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-FileID.uROIs = {'vent'};
+FileID.uROIs = {'vent', 'tha', 'str','gwb'};
+% FileID.uROIs = {'vent'};
 
 
 FileID.uHEMs = {'l', 'r','4'};
@@ -64,7 +64,7 @@ AR = cell(1,length(fields));
 
 %% run
 subj_ii = find(~cellfun(@isempty,strfind(fields,FileID.uIDs{1})))';
-nUsedROI = 0;
+
 % loop over ROIs
 for ii=subj_ii
   % get data
@@ -83,8 +83,7 @@ for ii=subj_ii
     if strcmp(bs, 'outside')
         continue
     end
-    disp('right')
-    nUsedROI = nUsedROI + 1;
+    
     [better_signed{ii},worse_signed{ii},brd_crds{ii},brd_ind{ii},AR{ii}] = ...
         deal(bs,ws,bc,bi,ar_list);
 
@@ -92,12 +91,17 @@ for ii=subj_ii
   numcl(ii) = length(better_signed{ii});
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
-disp(length(AR))
-nUsedROI
-if length(AR) ~= nUsedROI
-    disp(size(better_signed))
-    AR(nUsedROI+1:end) = [];
-end 
+
+% remove any empty cells from arrays
+better_signed = better_signed(~cellfun('isempty',better_signed))
+worse_signed = worse_signed(~cellfun('isempty',worse_signed))
+brd_crds = brd_crds(~cellfun('isempty',brd_crds))
+brd_ind = brd_ind(~cellfun('isempty',brd_ind))
+AR = AR(~cellfun('isempty',AR))
+
+numcl = nonzeros(numcl)
+mot_mean = mot_mean(~cellfun('isempty',mot_mean))
+
 %% compute and print statistics
 run statsFatNav
 
