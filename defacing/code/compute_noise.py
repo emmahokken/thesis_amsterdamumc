@@ -4,15 +4,9 @@ import numpy as np
 import os
 import sys 
 
-# load relevant files
-subj = 5
+# declare relevant prefixes and directories 
 prefix = '../../../../../..'
 root_path = prefix + '/data/projects/ahead/raw_gdata/'
-basefile = f'/data/projects/ahead/raw_gdata/Subcortex_{subj:04}_002_R02/'
-# infile = f'/data/projects/ahead/segmentations2/qMRI-Recomputed/sub-{subj:03}/ses-1/anat/wb/qmri/sub-{subj:03}_ses-1_acq-wb2_mod-r1hz_orient-std_brain.nii.gz'
-# reffile = f'/data/projects/ahead/raw_gdata/Subcortex_{subj:04}_002_R02/nii/r1corr.nii'
-# outfile = f'data/coregistration/sub-{subj:03}_outfile.nii'
-# trans_mat = f'data/coregistration/sub-{subj:03}_transform_mat.txt'
 
 # gather all directories 
 directories = [d[1] for d in  os.walk(root_path)][0]
@@ -30,6 +24,7 @@ for d in directories:
         kspace = np.fft.fft(data, norm='ortho')
     
         noise_per_coil = []
+        print('yo')
 
         # iterate over coils 
         for coil in range(kspace.shape[3]):
