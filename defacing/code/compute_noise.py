@@ -24,7 +24,6 @@ for d in directories:
         kspace = np.fft.fft(data, norm='ortho')
     
         noise_per_coil = []
-        print('yo')
 
         # iterate over coils 
         for coil in range(kspace.shape[3]):
