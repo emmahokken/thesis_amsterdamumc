@@ -47,23 +47,12 @@ for d in tqdm(directories):
 
             coil_data = data[:,:,:,coil]
 
-            print(np.mean(coil_data[:15,:15,:15].real))
-            print(mean_real[coil])
-
             # deface coil image 
             dilated_data = coil_data*dilation
 
-            # generate new Gaussian noise from that distribution 
-            noise_real = np.random.normal(mean_real[coil], std_real[coil], coil_data.shape)
-            noise_imag = np.random.normal(mean_imag[coil], std_imag[coil], coil_data.shape)
-
-            # convert back to image space 
-            # imspace_noise_real = np.fft.ifft(noise_real, norm='ortho')
-            # imspace_noise_imag = np.fft.ifft(noise_imag, norm='ortho')
-
-            # make space for brain in noise
-            noise_real = noise_real * inv_dilation
-            noise_imag = noise_imag * inv_dilation
+            # generate new Gaussian noise from that distribution and make space for brain in noise
+            noise_real = np.random.normal(mean_real[coil], std_real[coil], coil_data.shape) * inv_dilation
+            noise_imag = np.random.normal(mean_imag[coil], std_imag[coil], coil_data.shape) * inv_dilation
 
             # combine noise and coil image
             final_coil_image_real = dilated_data.real + noise_real
@@ -71,32 +60,8 @@ for d in tqdm(directories):
             
             defaced_image.append(final_coil_image_real + final_coil_image_imag)
 
-            fig, ax = plt.subplots(1,2)
-
-            ax[0].imshow((final_coil_image_real + final_coil_image_imag)[:15,:15,140].real, cmap='gray')
-            ax[0].set_title('added noise')
-            ax[0].axis('off')
-            ax[1].imshow(coil_data[:15,:15,140].real, cmap='gray')
-            ax[1].set_title('original noise')
-            ax[1].axis('off')
-            plt.show()
-            plt.show()
-
-
-        defaced_image = np.array(defaced_image)
-        print('done', defaced_image.shape)
-        fig, ax = plt.subplots(1,2)
-
-        ax[0].imshow(data[:,:,140,2].real, cmap='gray')
-        ax[0].set_title('defaced image')
-        ax[0].axis('off')
-        ax[1].imshow(defaced_image[:,:,140,2].real, cmap='gray')
-        ax[1].set_title('defaced image')
-        ax[1].axis('off')
-        plt.show()
-
-        exit()
-
+        defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
+       
         # save new scan 
         if not os.path.exists(f'{save_path}{d}'):
             os.makedirs(f'{save_path}/{d}')

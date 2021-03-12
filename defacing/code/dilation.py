@@ -29,13 +29,12 @@ def dilate(file_path, kw=5, kh=5, iters=13, brain_mask_type='mask_inv2_te2_m_cor
     # smooth edges
     gaus_dilation = cv2.GaussianBlur(dilation, (kw,kh), 0)
 
-
-    return gaus_dilation
-    
     # create inverse mask of dilatio
     inv_dilation = abs(dilation - 1)
     inv_dilation[inv_dilation < 1] = 0
     
+    return gaus_dilation, inv_dilation
+
    
     # fill in with (second inversion) scan and add noise to background 
     filled_in = (inv2*gaus_dilation)
