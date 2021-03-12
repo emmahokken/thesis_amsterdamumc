@@ -36,8 +36,8 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.uIDs={'064'};
-FileID.type={'r2star'};
+FileID.uIDs={'000'};
+FileID.type={'r1'};
 
 % define ROIs to process
 FileID.uROIs = {'vent', 'tha', 'str','gwb'};
@@ -91,6 +91,16 @@ for ii=subj_ii
   numcl(ii) = length(better_signed{ii});
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
+
+better_signed{3} = [];
+worse_signed{3} = [];
+brd_crds{3} = [];
+brd_ind{3} = [];
+AR{3} = [];
+numcl(3) = 0;
+mot_mean{3} = [];
+
+
 
 % remove any empty cells from arrays
 better_signed = better_signed(~cellfun('isempty',better_signed))

@@ -26,4 +26,3 @@ print(segm2.shape)
 plt.imshow(segm2[:,100,:])
 plt.show()
 
-transformed_segm2 = np.matmul(transm, segm2)

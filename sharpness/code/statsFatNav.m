@@ -43,10 +43,8 @@ for ii=1:length(AR)
 end
 
 nROI=length(mot_mean)/nsubj;
-% relative nr of valid clusters
+% relative numberr of valid clusters
 relvalid=cellfun(@sum,validboth)./cellfun(@length,validboth);
-disp('relisize')
-disp(size(relvalid))
 relvalid=reshape(relvalid,nROI,[]);
 
 % number of clusters
@@ -77,16 +75,11 @@ i=iSubj;
       mot_plot = []; mot_mean_plot=[];
       k = 1;
       fieldind = fieldinds(k);
-      sigm_data = better_signed{fieldind}+worse_signed{fieldind}
-      signif = better_signed{fieldind}|worse_signed{fieldind}
-      tmp=sigma_diff_signed{fieldind}(validboth{fieldind}>0)
-      fieldind
-      sigma_diff_signed{fieldind}
-      validboth{fieldind}
-      validboth{fieldind}>0
+      sigm_data = better_signed{fieldind}+worse_signed{fieldind};
+      signif = better_signed{fieldind}|worse_signed{fieldind};
+      tmp=sigma_diff_signed{fieldind}(validboth{fieldind}>0);
       
-      
-      u=uncertainty{fieldind}(validboth{fieldind}>0)
+      u=uncertainty{fieldind}(validboth{fieldind}>0);
       try
         csigma{i}=cat(2,csigma{i},FWHM*tmp);
         cu{i}=cat(2,cu{i},FWHM*u);
@@ -103,7 +96,7 @@ i=iSubj;
       mot_mean_plot(k) = (mot_mean{fieldind});
       mot_add = ones(sum(signif),1)*mot_mean{fieldind}; 
       mot_plot = cat(2,mot_plot,mot_add');
-      plot_sigma = cat(2,plot_sigma,sigm_mean_plot)
+      plot_sigma = cat(2,plot_sigma,sigm_mean_plot);
    
       plot_u=cat(2,plot_u,uplot);
       plot_motion = cat(2,plot_motion,mot_mean_plot);

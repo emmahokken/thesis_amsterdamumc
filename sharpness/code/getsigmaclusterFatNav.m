@@ -15,7 +15,9 @@ k_R3 = pars.numIcl;
 cluster_size = pars.numpoints;
 
 % permute if using orignal data
-% data_uncorr = permute(data_uncorr,[3 1 2]);
+if strcmp(FileID.type(1),'r1') && strcmp(FileID.uIDs(1),'000')
+    data_uncorr = permute(data_uncorr,[3 1 2]);
+end
 
 disp(size(data_corr))
 disp(size(data_uncorr))
