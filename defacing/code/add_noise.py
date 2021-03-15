@@ -32,11 +32,6 @@ for d in tqdm(directories[20:]):
     dilation = np.moveaxis(dilation, 2, 0)
     inv_dilation = np.moveaxis(inv_dilation, 2, 0)
 
-    # repeat array n of coils times so we don't have to iterate over each coil seperately
-    dilation = np.repeat(dilation[:,:,:,np.newaxis], 32, axis=3)
-    inv_dilation = np.repeat(inv_dilation[:,:,:,np.newaxis], 32, axis=3)
-    # print(dilation.shape, inv_dilation.shape)
-
     # iterate over the four echo times
     for echo in range(1,5):
         file = f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz'
@@ -45,39 +40,34 @@ for d in tqdm(directories[20:]):
         data_load = nib.load(file)
         data = data_load.get_fdata(dtype=np.complex64)
 
-        # defaced_image = []
+        defaced_image = []
 
-        # # iterate over coils 
-        # for coil in range(data.shape[3]):
+        # iterate over coils 
+        for coil in range(data.shape[3]):
 
-        #     coil_data = data[:,:,:,coil]
+            coil_data = data[:,:,:,coil]
 
-        # deface coil image 
-        dilated_data = data*dilation
+            # deface coil image 
+            dilated_data = coil_data*dilation
 
-        # generate new Gaussian noise from that distribution and make space for brain in noise
-        noise_real =  np.moveaxis([np.random.normal(mean_real[coil], std_real[coil], data.shape[:-1]) for coil in range(data.shape[3])], 0, 3) * inv_dilation
-        # print(noise_real.shape)
-        noise_imag = np.moveaxis([np.random.normal(mean_imag[coil], std_imag[coil], data.shape[:-1]) for coil in range(data.shape[3])], 0, 3) * inv_dilation
+            # generate new Gaussian noise from that distribution and make space for brain in noise
+            noise_real = np.random.normal(mean_real[coil], std_real[coil], coil_data.shape) * inv_dilation
+            noise_imag = np.random.normal(mean_imag[coil], std_imag[coil], coil_data.shape) * inv_dilation
 
-        # combine noise and coil image
-        final_image_real = dilated_data.real + noise_real
-        final_image_imag = dilated_data.imag + noise_imag
-        
-        final_image = final_image_real + final_image_imag
-        # print(final_image.shape)
+            # combine noise and coil image
+            final_coil_image_real = dilated_data.real + noise_real
+            final_coil_image_imag = dilated_data.imag + noise_imag
+            
+            defaced_image.append(final_coil_image_real + final_coil_image_imag)
 
-        # plt.imshow(final_image[:,:,140,3].real, cmap='gray')
-        # plt.show()
-
-        # defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
+        defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
        
         # save new scan 
         if not os.path.exists(f'{save_path}{d}'):
             os.makedirs(f'{save_path}/{d}')
         save_dir = f'{save_path}/{d}/dilated_{d}_inv2_{echo}_gdataCorrected.nii.gz'
 
-        nifit_image = nib.Nifti1Image(dataobj=final_image, header=data_load.header, affine=data_load.affine)
+        nifit_image = nib.Nifti1Image(dataobj=defaced_image, header=data_load.header, affine=data_load.affine)
         nib.save(img=nifit_image, filename=save_dir)
 
 
