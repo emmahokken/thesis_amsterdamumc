@@ -10,7 +10,7 @@ from tqdm import tqdm
 from dilation import dilate
 
 
-def add_noise(outer_h, outer_w, inner_h, inner_w):
+def add_noise(outer_h, outer_w, inner_h, inner_w, plot=False):
         
     # declare relevant prefixes and directories 
     prefix = '../../../../../..'
@@ -42,17 +42,19 @@ def add_noise(outer_h, outer_w, inner_h, inner_w):
             data_load = nib.load(file)
             data = data_load.get_fdata(dtype=np.complex64)
 
+            kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2), norm='ortho'))
+
             defaced_image = []
             no_noise = []
 
-            
             s = 291
-            indices = create_kspace_mask(data, outer_h, outer_w, inner_h, inner_w, plot=False)
+            indices = create_kspace_mask(data, kspace, outer_h, outer_w, inner_h, inner_w, s, plot=plot)
     
             # circulat_mask = (kspace[np.newaxis,:]-x_mid)**2 + (kspace[:,np.newaxis]-y_mid)**2 < r**2
 
             # iterate over coils 
             for coil in range(data.shape[3]):
+                print('Coil:', coil)
 
                 coil_data = data[:,:,:,coil]
 
@@ -61,12 +63,13 @@ def add_noise(outer_h, outer_w, inner_h, inner_w):
                 without_noise = dilated_data.copy()
                 no_noise.append(without_noise)
 
-
                 # imspace = np.fft.ifftshift(np.fft.ifftn(np.fft.fftshift(kspace[x_mid-25:x_mid+25,y_mid-25:y_mid+25,290,coil]), norm='ortho'))
                 # calculate std for noise generation 
                 std_real = np.std(kspace[indices[0], indices[1], s, coil].real)
                 std_imag = np.std(kspace[indices[0], indices[1], s, coil].imag)
                 
+                # print('STD real:', std_real)
+                # print('STD imag:', std_imag)
                 # generate new Gaussian noise from that distribution and make space for brain in noise
                 noise_real = np.random.normal(0, std_real, coil_data.shape) * inv_dilation
                 noise_imag = np.random.normal(0, std_imag, coil_data.shape) * inv_dilation
@@ -97,7 +100,7 @@ def add_noise(outer_h, outer_w, inner_h, inner_w):
             break 
 
 
-def create_kspace_mask(data, outer_h, outer_w, inner_h, inner_w, s, plot=False):
+def create_kspace_mask(data, kspace, outer_h, outer_w, inner_h, inner_w, s, plot=False):
     ''' Create the mask used to gather noise statistics from kspace. 
     
     Args: 
@@ -114,7 +117,6 @@ def create_kspace_mask(data, outer_h, outer_w, inner_h, inner_w, s, plot=False):
     z_mid = data.shape[2] // 2 
     
     # translate to frequency domain for noise generation 
-    kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2), norm='ortho'))
     kspace_mask = np.zeros((kspace.shape[0], kspace.shape[1]))
 
     # create mask for ring of kspace for noise 
@@ -140,7 +142,7 @@ if __name__ == '__main__':
 
     outer_w = 220
     outer_h = 220
-    inner_w = 150
-    inner_h = 150
+    inner_w = 170
+    inner_h = 170
 
-    add_noise(outer_h, outer_w, inner_h, inner_w)
+    add_noise(outer_h, outer_w, inner_h, inner_w, plot=False)
