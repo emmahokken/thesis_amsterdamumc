@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches 
 import nibabel as nib 
 import numpy as np 
 import os
@@ -8,86 +9,138 @@ from tqdm import tqdm
 
 from dilation import dilate
 
-# declare relevant prefixes and directories 
-prefix = '../../../../../..'
-root_path = prefix + '/data/projects/ahead/raw_gdata/'
-save_path = '../results/dilation/'
 
-# gather all directories 
-directories = [d[1] for d in  os.walk(root_path)][0]
-subjects = ['0004', '0016', '0067', '0083']
-for d in tqdm(directories): 
-    print(d)
-    if not any(x in d for x in subjects):
-        continue
-
-    with open(f'../data/{d}/noise_stats.txt', 'r') as f:
-        # skip over first line 
-        f.readline()
-
-        # read file, column wise
-        rows = [[x for x in line.split(',')] for line in f]
-        cols = np.array([np.array(col, dtype=float) for col in zip(*rows)])
-
-        mean_real, mean_imag, std_real, std_imag = [c for c in cols]
-
-    # get dilated brain mask for defacing and reorient axes
-    dilation, inv_dilation = dilate(f'{root_path}{d}')
-    dilation = np.moveaxis(dilation, 2, 0)
-    inv_dilation = np.moveaxis(inv_dilation, 2, 0)
-
-    dilation = np.fliplr(dilation)
-    inv_dilation = np.fliplr(inv_dilation)
-
-    # iterate over the four echo times
-    for echo in range(1,5):
-        print('Echo:', echo)
-        file = f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz'
-       
-        # load specific echo file 
-        data_load = nib.load(file)
-        data = data_load.get_fdata(dtype=np.complex64)
-
-        defaced_image = []
-        no_noise = []
-
-
-        # iterate over coils 
-        for coil in range(data.shape[3]):
-
-            coil_data = data[:,:,:,coil]
-
-            # deface coil image 
-            dilated_data = coil_data*dilation
-            no_noise.append(dilated_data)
+def add_noise(outer_h, outer_w, inner_h, inner_w):
         
-            # generate new Gaussian noise from that distribution and make space for brain in noise
-            noise_real = np.random.normal(0, std_real[coil], coil_data.shape) * inv_dilation
-            noise_imag = np.random.normal(0, std_imag[coil], coil_data.shape) * inv_dilation
+    # declare relevant prefixes and directories 
+    prefix = '../../../../../..'
+    root_path = prefix + '/data/projects/ahead/raw_gdata/'
+    save_path = '../results/dilation/'
 
-            # combine noise and coil image
-            dilated_data.real += noise_real
-            dilated_data.imag += noise_imag
+    # gather all directories 
+    directories = [d[1] for d in  os.walk(root_path)][0]
+    subjects = ['0004', '0016', '0067', '0083']
+    for d in tqdm(directories): 
+        print(d)
+        if not any(x in d for x in subjects):
+            continue
+
+        # get dilated brain mask for defacing and reorient axes
+        dilation, inv_dilation = dilate(f'{root_path}{d}')
+        dilation = np.moveaxis(dilation, 2, 0)
+        inv_dilation = np.moveaxis(inv_dilation, 2, 0)
+
+        dilation = np.fliplr(dilation)
+        inv_dilation = np.fliplr(inv_dilation)
+
+        # iterate over the four echo times
+        for echo in range(1,5):
+            print('Echo:', echo)
+            file = f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz'
+        
+            # load specific echo file 
+            data_load = nib.load(file)
+            data = data_load.get_fdata(dtype=np.complex64)
+
+            defaced_image = []
+            no_noise = []
+
             
-            defaced_image.append(dilated_data)
-          
+            s = 291
+            indices = create_kspace_mask(data, outer_h, outer_w, inner_h, inner_w, plot=False)
+    
+            # circulat_mask = (kspace[np.newaxis,:]-x_mid)**2 + (kspace[:,np.newaxis]-y_mid)**2 < r**2
 
-        defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
-        no_noise = np.moveaxis(np.array(no_noise), 0, 3)
+            # iterate over coils 
+            for coil in range(data.shape[3]):
 
-        # save new scan 
-        if not os.path.exists(f'{save_path}{d}'):
-            os.makedirs(f'{save_path}/{d}')
-        save_dir = f'{save_path}/{d}/dilated_{d}_inv2_{echo}_gdataCorrected.nii.gz'
+                coil_data = data[:,:,:,coil]
 
-        nifit_image = nib.Nifti1Image(dataobj=defaced_image, header=data_load.header, affine=data_load.affine)
-        nib.save(img=nifit_image, filename=save_dir)
-
-        save_dir = f'{save_path}/{d}/dilated_no_noise_{d}_inv2_{echo}_gdataCorrected.nii.gz'
-
-        nifit_image = nib.Nifti1Image(dataobj=no_noise, header=data_load.header, affine=data_load.affine)
-        nib.save(img=nifit_image, filename=save_dir)
-
-        break 
+                # deface coil image 
+                dilated_data = coil_data*dilation
+                without_noise = dilated_data.copy()
+                no_noise.append(without_noise)
 
 
+                # imspace = np.fft.ifftshift(np.fft.ifftn(np.fft.fftshift(kspace[x_mid-25:x_mid+25,y_mid-25:y_mid+25,290,coil]), norm='ortho'))
+                # calculate std for noise generation 
+                std_real = np.std(kspace[indices[0], indices[1], s, coil].real)
+                std_imag = np.std(kspace[indices[0], indices[1], s, coil].imag)
+                
+                # generate new Gaussian noise from that distribution and make space for brain in noise
+                noise_real = np.random.normal(0, std_real, coil_data.shape) * inv_dilation
+                noise_imag = np.random.normal(0, std_imag, coil_data.shape) * inv_dilation
+
+                # combine noise and coil image
+                dilated_data.real += noise_real
+                dilated_data.imag += noise_imag
+                
+                defaced_image.append(dilated_data)
+            
+
+            defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
+            no_noise = np.moveaxis(np.array(no_noise), 0, 3)
+
+            # save new scan 
+            if not os.path.exists(f'{save_path}{d}'):
+                os.makedirs(f'{save_path}/{d}')
+            save_dir = f'{save_path}/{d}/dilated_{d}_inv2_{echo}_gdataCorrected.nii.gz'
+
+            nifit_image = nib.Nifti1Image(dataobj=defaced_image, header=data_load.header, affine=data_load.affine)
+            nib.save(img=nifit_image, filename=save_dir)
+
+            save_dir = f'{save_path}/{d}/dilated_no_noise_{d}_inv2_{echo}_gdataCorrected.nii.gz'
+
+            nifit_image = nib.Nifti1Image(dataobj=no_noise, header=data_load.header, affine=data_load.affine)
+            nib.save(img=nifit_image, filename=save_dir)
+
+            break 
+
+
+def create_kspace_mask(data, outer_h, outer_w, inner_h, inner_w, s, plot=False):
+    ''' Create the mask used to gather noise statistics from kspace. 
+    
+    Args: 
+        data: MRI data
+        outer_h, outer_w, inner_h, inner_w: measurements of the box that is used to calculate STD
+        s: slice to plot
+        plot: whether to plot the box, default set to False
+    
+    Returns: 
+        indices: indices of the kspace mask  ''' 
+    # determine middle for noise generation 
+    x_mid = data.shape[0] // 2
+    y_mid = data.shape[1] // 2
+    z_mid = data.shape[2] // 2 
+    
+    # translate to frequency domain for noise generation 
+    kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2), norm='ortho'))
+    kspace_mask = np.zeros((kspace.shape[0], kspace.shape[1]))
+
+    # create mask for ring of kspace for noise 
+    kspace_mask[x_mid-(outer_w//2):x_mid+(outer_w//2),y_mid-(outer_h//2):y_mid+(outer_h//2)] = 1
+    kspace_mask[x_mid-(inner_w//2):x_mid+(inner_w//2),y_mid-(inner_h//2):y_mid+(inner_h//2)] = 0
+    indices = np.where(kspace_mask > 0)
+
+    if plot:
+        # plot box around region
+        fig, ax = plt.subplots()
+        ax.imshow(ndimage.rotate(kspace[:,:,s,8].real, 90), cmap='gray')
+        rect1 = patches.Rectangle((x_mid-(outer_w//2),y_mid-(outer_h//2)), outer_w, outer_h, linewidth=1, edgecolor='r', facecolor='none')
+        ax.add_patch(rect1)
+        rect2 = patches.Rectangle((x_mid-(inner_w//2),y_mid-(inner_h//2)), inner_w, inner_h, linewidth=1, edgecolor='g', facecolor='none')
+        ax.add_patch(rect2)
+        ax.axis('off')
+        plt.show()
+
+    return indices
+
+
+if __name__ == '__main__':
+
+    outer_w = 220
+    outer_h = 220
+    inner_w = 150
+    inner_h = 150
+
+    add_noise(outer_h, outer_w, inner_h, inner_w)
