@@ -36,6 +36,10 @@ segm_files.sort()
 infile_directories.sort()
 ref_directories.sort()
 
+labels_structures = ['3v','str_hem-l','str_hem-r', 'stn_hem-l','stn_hem-r','sn_hem-l','sn_hem-r', 'rn_hem-l','rn_hem-r','gpi_hem-l','gpi_hem-r','gpe_hem-l','gpe_hem-r',
+                    'tha_hem-l','tha_hem-r','vent_hem-l','vent_hem-r','vent_hem-4','amg_hem-l','amg_hem-r','ic_hem-l','ic_hem-r','vta_hem-l','vta_hem-r','fx_hem','pag-l','pag_hem-r',
+                    'ppn_hem-l','ppn_hem-r','cl_hem-l','cl_hem-r']
+
 # iterate over all 
 for s, i, r in zip(segm_files, infile_directories, ref_directories):
 
@@ -95,11 +99,15 @@ for s, i, r in zip(segm_files, infile_directories, ref_directories):
         nifit_image = nib.Nifti1Image(dataobj=working_map, header=trans_bin_map_file.header, affine=trans_bin_map_file.affine)
         # nib.save(img=nifit_image, filename=save_dir)
 
+        region_name = labels_structures[r]
+        
+        levelset_outfile = f'{i}_mask-{region_name}_lvlreg-corr_def-img.nii'
+        output_dir = '../../data/coregistration/'
         # compute distance map from that region 
-        levelset = nighres.surface.probability_to_levelset(nifit_image, save_data=True)
-
-        levelset_file = levelset['result']
-        levelset = levelset_file.get_fdata()
+        levelset = nighres.surface.probability_to_levelset(nifit_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
+        print(levelset)
+        # levelset_file = levelset['result']
+        # levelset = levelset_file.get_fdata()
 
 
         
