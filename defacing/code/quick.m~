@@ -1,0 +1,21 @@
+data_dir = '../../../../../data/projects/ahead/raw_data/';
+
+
+% read in data 
+r = MRecon(file);
+
+% select specific data type 
+% 1 is standard data, 3 is phase correction data, 5 is noise 
+r.Parameter.Parameter2Read.typ = 1;
+% r.Parameter.Parameter2Read.Update;
+r.ReadData;
+
+% perform corrections 
+r.DcOffsetCorrection;
+r.PDACorrection;
+r.RandomPhaseCorrection;
+r.MeasPhaseCorrection;
+r.SortData;
+r.GridData;
+
+d = r.Data;

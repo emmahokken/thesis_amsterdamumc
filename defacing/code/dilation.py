@@ -23,20 +23,16 @@ def dilate(file_path, kw=5, kh=5, iters=13, brain_mask_type='mask_inv2_te2_m_cor
     brain_mask_nii = nib.load(brain_mask_path)
     brain_mask = brain_mask_nii.get_fdata()
 
-    # dilate brain mask
+    # dilate brain mask and correct to 1 (was 0.999...)
     dilation = cv2.dilate(brain_mask, kernel, iterations=iters)
+    dilation[dilation > 0] = 1
 
     # smooth edges
-    gaus_dilation = cv2.GaussianBlur(dilation, (kw,kh), 0)
+    gaus_dilation = cv2.GaussianBlur(dilation, (kw, kh), 0)
 
     # create inverse mask of dilatio
     inv_dilation = abs(dilation - 1)
     inv_dilation[inv_dilation < 1] = 0
     
     return gaus_dilation, inv_dilation
-
-   
-    # fill in with (second inversion) scan and add noise to background 
-    filled_in = (inv2*gaus_dilation)
-    filled_in_noise = (inv2*gaus_dilation) + noise_mask
 

@@ -61,7 +61,7 @@ for i=1:length(files)
     s = size(d);
         
     % translate to image space, but normalize
-    % scale by 1/sqrt(N) for fft, by sqrt(N) for ifft (
+    % scale by 1/sqrt(N) for fft, by sqrt(N) for ifft 
     d = ifft(d) * sqrt(s(1));
     
     mean_real = cell(s(4),1);

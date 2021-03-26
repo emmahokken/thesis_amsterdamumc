@@ -10,7 +10,7 @@ from tqdm import tqdm
 from dilation import dilate
 
 
-def add_noise(outer_h, outer_w, inner_h, inner_w, plot=False):
+def add_noise(r_outer, r_inner, plot=False):
         
     # declare relevant prefixes and directories 
     prefix = '../../../../../..'
@@ -22,8 +22,8 @@ def add_noise(outer_h, outer_w, inner_h, inner_w, plot=False):
     subjects = ['0004', '0016', '0067', '0083']
     for d in tqdm(directories): 
         print(d)
-        if not any(x in d for x in subjects):
-            continue
+        # if not any(x in d for x in subjects):
+        #     continue
 
         # get dilated brain mask for defacing and reorient axes
         dilation, inv_dilation = dilate(f'{root_path}{d}')
@@ -42,19 +42,17 @@ def add_noise(outer_h, outer_w, inner_h, inner_w, plot=False):
             data_load = nib.load(file)
             data = data_load.get_fdata(dtype=np.complex64)
 
-            kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2), norm='ortho'))
+            kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2)))
 
             defaced_image = []
             no_noise = []
 
             s = 291
-            indices = create_kspace_mask(data, kspace, outer_h, outer_w, inner_h, inner_w, s, plot=plot)
+            indices = create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=plot)
     
-            # circulat_mask = (kspace[np.newaxis,:]-x_mid)**2 + (kspace[:,np.newaxis]-y_mid)**2 < r**2
-
             # iterate over coils 
             for coil in range(data.shape[3]):
-                print('Coil:', coil)
+                # print('Coil:', coil)
 
                 coil_data = data[:,:,:,coil]
 
@@ -80,6 +78,7 @@ def add_noise(outer_h, outer_w, inner_h, inner_w, plot=False):
                 
                 defaced_image.append(dilated_data)
             
+            # print('Done with coils.')
 
             defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
             no_noise = np.moveaxis(np.array(no_noise), 0, 3)
@@ -97,10 +96,9 @@ def add_noise(outer_h, outer_w, inner_h, inner_w, plot=False):
             nifit_image = nib.Nifti1Image(dataobj=no_noise, header=data_load.header, affine=data_load.affine)
             nib.save(img=nifit_image, filename=save_dir)
 
-            break 
 
 
-def create_kspace_mask(data, kspace, outer_h, outer_w, inner_h, inner_w, s, plot=False):
+def create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=False):
     ''' Create the mask used to gather noise statistics from kspace. 
     
     Args: 
@@ -111,27 +109,29 @@ def create_kspace_mask(data, kspace, outer_h, outer_w, inner_h, inner_w, s, plot
     
     Returns: 
         indices: indices of the kspace mask  ''' 
+
     # determine middle for noise generation 
     x_mid = data.shape[0] // 2
     y_mid = data.shape[1] // 2
-    z_mid = data.shape[2] // 2 
-    
-    # translate to frequency domain for noise generation 
-    kspace_mask = np.zeros((kspace.shape[0], kspace.shape[1]))
 
     # create mask for ring of kspace for noise 
-    kspace_mask[x_mid-(outer_w//2):x_mid+(outer_w//2),y_mid-(outer_h//2):y_mid+(outer_h//2)] = 1
-    kspace_mask[x_mid-(inner_w//2):x_mid+(inner_w//2),y_mid-(inner_h//2):y_mid+(inner_h//2)] = 0
-    indices = np.where(kspace_mask > 0)
+    h, w = data.shape[:2]
+    y, x = np.ogrid[:h, :w]
+
+    circ_mask = np.sqrt((x-y_mid)**2 + (y-x_mid)**2) < r_outer
+    circ_mask_inner = np.sqrt((x- y_mid)**2 + (y- x_mid)**2) < r_inner
+    circ_mask[circ_mask_inner] = 0 
+
+    indices = np.where(circ_mask > 0)
 
     if plot:
         # plot box around region
         fig, ax = plt.subplots()
         ax.imshow(ndimage.rotate(kspace[:,:,s,8].real, 90), cmap='gray')
-        rect1 = patches.Rectangle((x_mid-(outer_w//2),y_mid-(outer_h//2)), outer_w, outer_h, linewidth=1, edgecolor='r', facecolor='none')
-        ax.add_patch(rect1)
-        rect2 = patches.Rectangle((x_mid-(inner_w//2),y_mid-(inner_h//2)), inner_w, inner_h, linewidth=1, edgecolor='g', facecolor='none')
-        ax.add_patch(rect2)
+        circ_outer = patches.Circle((x_mid,y_mid), radius=r_outer, linewidth=1, edgecolor='lime', facecolor='none')
+        ax.add_patch(circ_outer)
+        circ_inner = patches.Circle((x_mid,y_mid), radius=r_inner, linewidth=1, edgecolor='c', facecolor='none')
+        ax.add_patch(circ_inner)
         ax.axis('off')
         plt.show()
 
@@ -140,9 +140,8 @@ def create_kspace_mask(data, kspace, outer_h, outer_w, inner_h, inner_w, s, plot
 
 if __name__ == '__main__':
 
-    outer_w = 220
-    outer_h = 220
-    inner_w = 170
-    inner_h = 170
+ 
+    r_outer = 117
+    r_inner = 90
 
-    add_noise(outer_h, outer_w, inner_h, inner_w, plot=False)
+    add_noise(r_outer, r_inner, plot=False)
