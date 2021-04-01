@@ -64,42 +64,33 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
     if not os.path.exists(transfile_r1corr):
         os.system(f'flirt -in {infile} -ref {r2star_file} -out {outfile_r2star} -omat {transfile_r2star}')
 
-    # transform segmented file if this has not been done yet
-    segm_outfile_r2star = f'../../data/coregistration/{i}_transformed_r2star_{seg}'
-    if not os.path.exists(segm_outfile_r2star):
-        os.system(f'flirt -in {segm_path + seg} -ref {r2star_file} -out {segm_outfile_r2star} -init {transfile_r2star} -applyxfm')
-    
-    trans_mat = np.loadtxt(transfile_r2star)
-
     # load in binary map
     bin_map_file = nib.load(segm_path + seg)
     bin_map = bin_map_file.get_fdata()
     regions = np.unique(bin_map)
 
-    trans_r2star_map_file = nib.load(segm_outfile_r2star)
-    trans_r2star_map = trans_r2star_map_file.get_fdata()
-
-    trans_r2star_map = np.moveaxis(trans_r2star_map, 0,2)
-    trans_r2star_map = trans_r2star_map.astype(int)
-    trans_r2star_regions = np.unique(trans_r2star_map)
-
     # iterate over numbers (aka regions) 
-    for r in trans_r2star_regions[1:]:
+    for r in regions[1:]:
 
         # because the mask is altered, the orignal mask needs to be copied
-        working_map_r2star = np.copy(trans_r2star_map)
+        working_map = np.copy(bin_map)
         # find indices that do not beling to region and set those to 0
-        region_r2star = np.where(trans_r2star_map != r)
-        working_map_r2star[region_r2star] = 0
+        region = np.where(bin_map != r)
+        working_map[region] = 0
 
-        nifit_image_r2star = nib.Nifti1Image(dataobj=working_map_r2star, header=trans_r2star_map_file.header, affine=trans_r2star_map_file.affine)
+        nifti_image = nib.Nifti1Image(dataobj=working_map, header=bin_map_file.header, affine=bin_map_file.affine)
 
-        region_name = labels_structures[r]
+        region_name = labels_structures[int(r)]
         
-        r2star_levelset_outfile = f'{i}_mask-{region_name}_lvlreg-gt_def-img.nii'
+        levelset_outfile = f'{i}_mask-{region_name}_lvlreg-gt_def-img.nii'
         output_dir = '../../data/coregistration/'
 
         # compute distance map from that region 
-        levelset = nighres.surface.probability_to_levelset(nifit_image_r2star, save_data=True, output_dir=output_dir, file_name=r2star_levelset_outfile)
+        levelset = nighres.surface.probability_to_levelset(nifti_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
+
+        # transform segmented file
+        os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile_r2star} -applyxfm')
+        
+    
        
     exit()
