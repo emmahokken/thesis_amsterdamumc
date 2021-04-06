@@ -62,21 +62,20 @@ for iROI = 1:length(FileID.uROIs)
         subj_data_uncorr.(nm)=tmp.img;
 
         % Load label map (assuming corrected and uncorrected maps identical)
-        if strcmp(FileID.uROIs{iROI},cortag)
-          ROI=FileID.uROIs{iROI};
+%         if strcmp(FileID.uROIs{iROI},cortag)
+%           ROI=FileID.uROIs{iROI};
+%           cd(lbldir)
+%           mapname=[ID '_t1corr_cruise-' ROI '_ants-def0.nii'];
+%           map_corr.(nm) = load_untouch_nii(mapname);
+%           mapname=[ID '_t1uncorr_cruise-' ROI '_ants-def0.nii'];
+%           map_uncorr.(nm) = load_untouch_nii(mapname);
+%         else
           cd(lbldir)
-          mapname=[ID '_t1corr_cruise-' ROI '_ants-def0.nii'];
+          mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
           map_corr.(nm) = load_untouch_nii(mapname);
-          mapname=[ID '_t1uncorr_cruise-' ROI '_ants-def0.nii'];
+%           mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
           map_uncorr.(nm) = load_untouch_nii(mapname);
-        else
-          cd(lbldir)
-          mapname = strjoin({ID, ROI, HEM, char('lvlreg-corr_def-img.nii')},'_');
-          map_corr.(nm) = load_untouch_nii(mapname);
-          mapname = strjoin({ID, ROI, HEM, char('lvlreg-uncorr_def-img.nii')},'_');
-          map_uncorr.(nm) = load_untouch_nii(mapname);
-        end
-
+%         end
         % Alternative way to store MPos data, now with same indexing as
         % other data
         MPos.(nm) = mpars.MPos;

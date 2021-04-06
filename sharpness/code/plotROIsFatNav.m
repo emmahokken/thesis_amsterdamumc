@@ -15,6 +15,8 @@ for iSubj=1:nsubj
    for iROI=subj
      idx=idx+1;
      map_corr = map_corrall.(fields{iROI}).img;
+     disp('corr')
+     disp(size(map_corr))
      p=(map_corr<0) .* (map_corr>-2);
      p=p>0;
      if idx==1
@@ -24,6 +26,7 @@ for iSubj=1:nsubj
      end
    end
    sz=size(ROImap);
+   disp(sz)
    ROImap=ROImap(:);
    d = t1_corrall.(fields{iROI});
    d(d>p_thresh)=p_thresh;d=d/p_thresh; % normalize and clip
@@ -31,19 +34,20 @@ for iSubj=1:nsubj
    tmp(ROImap>0,:)=tmp(ROImap>0,:)+cl(ROImap(ROImap>0),:);
    tmp=reshape(tmp,[sz 3]);
    tmp=tmp/max(tmp(:));
-   
+   disp(size(tmp))
+   disp('after some things')
    % permute to show reconsttucted images properly 
-%    tmp=permute(tmp,[1 3 2 4]);
+   tmp=permute(tmp,[1 3 2 4]);
    %ims=im2mat(arr(rgb(tmp(50:10:200,:,:,:)))); 
    %ima=im2mat(arr(rgb(tmp(:,:,:,:)))); 
-   imc=im2mat(arr(rgb(tmp(:,:,:,:)))); 
-
-   %im=im2mat(arr(tmp(:,:,50:10:200,:))); 
+   im=im2mat(arr(rgb(tmp(:,:,:,:)))); 
+disp(size(tmp))
+%    im=im2mat(arr(tmp(:,:,50:10:200,:))); 
   %^savenames=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_s.png']);
    %savenamea=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_a.png']);
-   savenamec=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_c.png']);
+   savenamec=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs.png']);
 
    %imwrite(ims,savenames);
    %imwrite(ima,savenamea);
-   imwrite(imc,savenamec);
+   imwrite(im,savenamec);
 end

@@ -51,6 +51,8 @@ labels_structures = ['','str_hem-l','str_hem-r', 'stn_hem-l','stn_hem-r','sn_hem
 # iterate over all 
 for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2star_files):
 
+    print('Working on', i)
+    
     infile = f'{infile_path}{i}/ses-1/anat/wb/qmri/{i}_ses-1_acq-wb2_mod-r1hz_orient-std_brain.nii.gz'
     r1corr = f'{r1corr_path}{r1}/nii/r1corr.nii'
     r2star_file = f'{r2star_path}{r2}'
@@ -61,7 +63,8 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
     transfile_r2star = f'../../data/coregistration/{i}_transform_mat_r2star.txt'
 
     # perform coregistration if this has not been done yet
-    if not os.path.exists(transfile_r1corr):
+    if not os.path.exists(transfile_r2star):
+        print('coregistering r2star file')
         os.system(f'flirt -in {infile} -ref {r2star_file} -out {outfile_r2star} -omat {transfile_r2star}')
 
     # load in binary map
@@ -72,15 +75,19 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
     # iterate over numbers (aka regions) 
     for r in regions[1:]:
 
+        region_name = labels_structures[int(r)]
+
         # because the mask is altered, the orignal mask needs to be copied
         working_map = np.copy(bin_map)
+       
         # find indices that do not beling to region and set those to 0
-        region = np.where(bin_map != r)
-        working_map[region] = 0
+        inv_region = np.where(bin_map != r)
+        working_map[inv_region] = 0
+        region = np.where(bin_map == r)
+        working_map[region] = 1
 
+        # change back into nifti image (needed for nighres)
         nifti_image = nib.Nifti1Image(dataobj=working_map, header=bin_map_file.header, affine=bin_map_file.affine)
-
-        region_name = labels_structures[int(r)]
         
         levelset_outfile = f'{i}_mask-{region_name}_lvlreg-gt_def-img.nii'
         output_dir = '../../data/coregistration/'
@@ -88,9 +95,30 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
         # compute distance map from that region 
         levelset = nighres.surface.probability_to_levelset(nifti_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
 
+        l1 = nib.load(levelset['result']).get_fdata()
+
         # transform segmented file
         os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile_r2star} -applyxfm')
         
-    
+        # os.system(f'flirt -in {levelset["result"]} -ref {levelset["result"]} -out {output_dir+"big"+levelset_outfile} -init {transfile_r2star} -applyxfm')
+        
+        os.remove(levelset['result'])
+        os.system(f'gzip -d {output_dir+levelset_outfile}')
+
+        # t1 = nib.load(output_dir+levelset_outfile).get_fdata()
+        # t2 = nib.load(output_dir+'big'+levelset_outfile+'.gz').get_fdata()
+        # t2 = np.moveaxis(t2, 0,2)
+        # t2 = np.moveaxis(t2,0,1)
+        # print(t1.shape)
+        # print(t2.shape)
+        # print(l1.shape)
+        # plt.subplot(131)
+        # plt.imshow(t1[140,:,:])
+        # plt.subplot(132)
+        # plt.imshow(t2[:,:,140])
+        # plt.subplot(133)
+        # plt.imshow(l1[140,:,:])
+        # plt.show()
+
        
     exit()
