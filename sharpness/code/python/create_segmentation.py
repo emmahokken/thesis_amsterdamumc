@@ -95,17 +95,23 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
         # compute distance map from that region 
         levelset = nighres.surface.probability_to_levelset(nifti_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
 
-        l1 = nib.load(levelset['result']).get_fdata()
 
         # transform segmented file
         os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile_r2star} -applyxfm')
         
         # os.system(f'flirt -in {levelset["result"]} -ref {levelset["result"]} -out {output_dir+"big"+levelset_outfile} -init {transfile_r2star} -applyxfm')
+        l1 = nib.load(levelset['result']).get_fdata()
         
         os.remove(levelset['result'])
         os.system(f'gzip -d {output_dir+levelset_outfile}')
 
-        # t1 = nib.load(output_dir+levelset_outfile).get_fdata()
+        defaced_file = nib.load(output_dir+levelset_outfile)
+        defaced = defaced_file.get_fdata()
+
+        flipped = np.flip(defaced, axis=1)
+        nifti_image = nib.Nifti1Image(dataobj=flipped, header=defaced_file.header, affine=defaced_file.affine)
+        nib.save(nifti_image, output_dir+levelset_outfile)
+
         # t2 = nib.load(output_dir+'big'+levelset_outfile+'.gz').get_fdata()
         # t2 = np.moveaxis(t2, 0,2)
         # t2 = np.moveaxis(t2,0,1)
@@ -120,5 +126,16 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
         # plt.imshow(l1[140,:,:])
         # plt.show()
 
+        # l1[l1 > 0] = 0
+        # l1[l1 < 0] = 1
+
+        # plt.imshow(l1[140,:,:])
+        # plt.show()
+
+        # t1[t1 > 0] = 0
+        # t1[t1 < 0] = 1
+
+        # plt.imshow(t1[140,:,:])
+        # plt.show()
        
     exit()
