@@ -19,9 +19,6 @@ cluster_size = pars.numpoints;
 %     data_uncorr = permute(data_uncorr,[3 1 2]);
 % end
 
-disp('data sizes')
-disp(size(data_corr))
-disp(size(data_uncorr))
 mask=and(data_corr>0,data_uncorr>0);
 frac=sum(mask(:))/numel(mask);
 disp(['Union mask of data_corr and data_uncorr percentage: ' num2str(frac)])

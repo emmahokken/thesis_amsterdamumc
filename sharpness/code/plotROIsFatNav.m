@@ -15,8 +15,6 @@ for iSubj=1:nsubj
    for iROI=subj
      idx=idx+1;
      map_corr = map_corrall.(fields{iROI}).img;
-     disp('corr')
-     disp(size(map_corr))
      p=(map_corr<0) .* (map_corr>-2);
      p=p>0;
      if idx==1
@@ -26,7 +24,6 @@ for iSubj=1:nsubj
      end
    end
    sz=size(ROImap);
-   disp(sz)
    ROImap=ROImap(:);
    d = t1_corrall.(fields{iROI});
    d(d>p_thresh)=p_thresh;d=d/p_thresh; % normalize and clip
