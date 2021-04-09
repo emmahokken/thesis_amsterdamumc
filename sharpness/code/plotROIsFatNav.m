@@ -3,7 +3,7 @@
 
 nsubj=length(FileID.uIDs);
 
-p_thresh=100; % intensity threshold for images
+p_thresh=100; % intensity threshold for images (1 for subj 000, 100 for others)
 
 savedir=fullfile(plotsavedir,'ROIs_anat');
 mkdir(savedir)
@@ -40,7 +40,7 @@ for iSubj=1:nsubj
    tmp=permute(tmp,[1 3 2 4]);
    %ims=im2mat(arr(rgb(tmp(50:10:200,:,:,:)))); 
    %ima=im2mat(arr(rgb(tmp(:,:,:,:)))); 
-   im=im2mat(arr(rgb(tmp(:,:,:,:)))); 
+   im=im2mat(arr(rgb(tmp(:,:,10:15,:)))); 
 disp(size(tmp))
 %    im=im2mat(arr(tmp(:,:,50:10:200,:))); 
   %^savenames=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_s.png']);

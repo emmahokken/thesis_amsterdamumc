@@ -21,7 +21,7 @@ prefix = '../../../../../../..'
 r1corr_path = prefix + '/data/projects/ahead/raw_gdata/'
 infile_path = prefix + '/data/projects/ahead/segmentations2/qMRI-Recomputed/'
 segm_path = prefix + '/data/projects/ahead/segmentations2/Automated-Parcellation/qmri2/'
-r2star_path = '../../../data/recon/test_all_3_ssim/R2star_map_gt/'
+r2star_path = '../../../../data/recon/test_all_3_ssim/R2star_map_gt/'
 
 # gather all files 
 segm_files = [f[2] for f in os.walk(segm_path)][0]
@@ -77,6 +77,9 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
 
         region_name = labels_structures[int(r)]
 
+        if 'vent' not in region_name:
+            continue
+
         # because the mask is altered, the orignal mask needs to be copied
         working_map = np.copy(bin_map)
        
@@ -95,22 +98,23 @@ for seg, i, r1, r2 in zip(segm_files, infile_directories, r1corr_directories, r2
         # compute distance map from that region 
         levelset = nighres.surface.probability_to_levelset(nifti_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
 
-
         # transform segmented file
         os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile_r2star} -applyxfm')
         
         # os.system(f'flirt -in {levelset["result"]} -ref {levelset["result"]} -out {output_dir+"big"+levelset_outfile} -init {transfile_r2star} -applyxfm')
         l1 = nib.load(levelset['result']).get_fdata()
         
-        os.remove(levelset['result'])
-        os.system(f'gzip -d {output_dir+levelset_outfile}')
 
-        defaced_file = nib.load(output_dir+levelset_outfile)
+        os.remove(levelset['result'])
+
+        defaced_file = nib.load(f'{output_dir}{levelset_outfile}.gz')
         defaced = defaced_file.get_fdata()
 
-        flipped = np.flip(defaced, axis=1)
+        os.remove(f'{output_dir}{levelset_outfile}.gz')
+        # flipped = np.flip(defaced, axis=1)
+        flipped = defaced 
         nifti_image = nib.Nifti1Image(dataobj=flipped, header=defaced_file.header, affine=defaced_file.affine)
-        nib.save(nifti_image, output_dir+levelset_outfile)
+        nib.save(nifti_image, '../../data/segm/'+levelset_outfile)
 
         # t2 = nib.load(output_dir+'big'+levelset_outfile+'.gz').get_fdata()
         # t2 = np.moveaxis(t2, 0,2)

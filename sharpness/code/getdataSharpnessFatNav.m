@@ -54,31 +54,37 @@ for iROI = 1:length(FileID.uROIs)
         % Load uncorrected and corrected data
         cd(datadir)  
         filenamecorr = [FileID.uIDs{1}, '_', FileID.type{1},'_rim.nii'];
+        disp(filenamecorr)
         tmp=load_untouch_nii(filenamecorr);
+        disp('tmp img size')
+        disp(size(tmp.img))
         voxRes=double(tmp.hdr.dime.dim(2:4));
-        subj_data_corr.(nm)=tmp.img;
+        subj_data_corr.(nm)=flip(tmp.img,2);
         filenameuncorr = [FileID.uIDs{1},'_',FileID.type{1},'_gt.nii'];
         tmp=load_untouch_nii(filenameuncorr);
-        subj_data_uncorr.(nm)=tmp.img;
+        disp(filenameuncorr)
+        disp(size(tmp.img))
+        subj_data_uncorr.(nm)=flip(tmp.img,2);
 
         % Load label map (assuming corrected and uncorrected maps identical)
-%         if strcmp(FileID.uROIs{iROI},cortag)
-%           ROI=FileID.uROIs{iROI};
-%           cd(lbldir)
-%           mapname=[ID '_t1corr_cruise-' ROI '_ants-def0.nii'];
-%           map_corr.(nm) = load_untouch_nii(mapname);
-%           mapname=[ID '_t1uncorr_cruise-' ROI '_ants-def0.nii'];
-%           map_uncorr.(nm) = load_untouch_nii(mapname);
-%         else
+        if strcmp(FileID.uROIs{iROI},cortag)
+          ROI=FileID.uROIs{iROI};
+          cd(lbldir)
+          mapname=[ID '_t1corr_cruise-' ROI '_ants-def0.nii'];
+          map_corr.(nm) = load_untouch_nii(mapname);
+          mapname=[ID '_t1uncorr_cruise-' ROI '_ants-def0.nii'];
+          map_uncorr.(nm) = load_untouch_nii(mapname);
+        else
           cd(lbldir)
           mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
           map_corr.(nm) = load_untouch_nii(mapname);
-%           mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
+          mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
           map_uncorr.(nm) = load_untouch_nii(mapname);
-%         end
+        end
         % Alternative way to store MPos data, now with same indexing as
         % other data
         MPos.(nm) = mpars.MPos;
+%         disp(size(map_corr.(nm).img))
       end
     end
 end

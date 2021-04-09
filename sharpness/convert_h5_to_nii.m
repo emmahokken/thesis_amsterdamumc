@@ -26,7 +26,8 @@ for i=1:length(acceleration_factors)
         for k=1:length(datasets)
             r = h5read(file, datasets{k});
             [p, name] = fileparts(file);
-
+            r = permute(r,[2 3 1]);
+            disp(size(r))
             final_niidir = strcat(niidir, acc);
             outfile = fullfile(final_niidir,[strcat(datasets{k},'/',name),'.nii']);
             spacing = [0.7,0.7,0.7];

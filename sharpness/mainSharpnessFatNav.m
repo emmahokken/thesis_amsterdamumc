@@ -36,12 +36,12 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.uIDs={'000'};
-FileID.type={'r1'};
+FileID.uIDs={'005'};
+FileID.type={'r2star'};
 
 % define ROIs to process
-FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-% FileID.uROIs = {'vent'};
+% FileID.uROIs = {'vent', 'tha', 'str','gwb'};
+FileID.uROIs = {'vent'};
 
 
 FileID.uHEMs = {'l', 'r','4'};
@@ -74,7 +74,6 @@ for ii=subj_ii
 
   map_uncorr = map_uncorrall.(fields{ii}).img;
   data_uncorr = t1_uncorrall.(fields{ii});
-  data_uncorr=permute(data_uncorr,[2 3 1]);
 
   % do fitting
   [bs,ws,bc,bi,ar_list] = ...
