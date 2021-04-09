@@ -42,7 +42,7 @@ def add_noise(r_outer, r_inner, plot=False):
             data_load = nib.load(file)
             data = data_load.get_fdata(dtype=np.complex64)
 
-            kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2)))
+            kspace = np.fft.fftshift(np.fft.fftn(np.fft.ifftshift(data), axes=(0,1,2), norm='ortho'))
 
             defaced_image = []
             no_noise = []
