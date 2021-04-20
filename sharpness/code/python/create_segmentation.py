@@ -14,12 +14,14 @@ prefix = '../../../../../../..'
 infile_path = prefix + '/data/projects/ahead/segmentations2/qMRI-Recomputed/'
 segm_path = prefix + '/data/projects/ahead/segmentations2/Automated-Parcellation/qmri2/'
 r2star_path = '../../../../data/recon/test_all_3_ssim/R2star_map_gt/'
+mat_path = '../../../../data/converted_mat_echo1/'
 
 # gather all files 
 segm_files = [f[2] for f in os.walk(segm_path)][0]
 r2star_files = [f[2] for f in os.walk(r2star_path)][0]
 infile_directories = [d[1] for d in os.walk(infile_path)][0]
 subjects = ['0'+d[4:] for d in infile_directories]
+mat_directoriess = [f[1] for f in os.walk(mat_path)][0]
 
 # sort files 
 segm_files.sort()
@@ -32,20 +34,21 @@ labels_structures = ['','str_hem-l','str_hem-r', 'stn_hem-l','stn_hem-r','sn_hem
                     'ppn_hem-l','ppn_hem-r','cl_hem-l','cl_hem-r']
 
 # iterate over new segmentations, infiles, r2star maps
-for seg, i, r2 in zip(segm_files, infile_directories, r2star_files):
+for seg, i, r2, mat in zip(segm_files, infile_directories, r2star_files, mat_directoriess):
 
     print('Working on', i)
     
     infile = f'{infile_path}{i}/ses-1/anat/wb/qmri/{i}_ses-1_acq-wb2_mod-r1hz_orient-std_brain.nii.gz'
     r2star_file = f'{r2star_path}{r2}'
+    mat_file = f'{mat_path}{mat}/{mat}_allm.nii'
+    outfile_r2star = f'../../data/coregistration/{i}_outfile_mat.nii'
+    transfile = f'../../data/coregistration/{i}_transform_mat_mat.txt'
     
-    outfile_r2star = f'../../data/coregistration/{i}_outfile_r2star.nii'
-    transfile_r2star = f'../../data/coregistration/{i}_transform_mat_r2star.txt'
 
     # perform coregistration if this has not been done yet
-    if not os.path.exists(transfile_r2star):
-        print('coregistering r2star file')
-        os.system(f'flirt -in {infile} -ref {r2star_file} -out {outfile_r2star} -omat {transfile_r2star}')
+    if not os.path.exists(outfile_r2star):
+        print('coregistering with mat file')
+        os.system(f'flirt -in {infile} -ref {mat_file} -out {outfile_r2star} -omat {transfile}')
 
     # load in binary map
     bin_map_file = nib.load(segm_path + seg)
@@ -76,7 +79,7 @@ for seg, i, r2 in zip(segm_files, infile_directories, r2star_files):
         levelset = nighres.surface.probability_to_levelset(nifti_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
 
         # transform segmented file
-        os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile_r2star} -applyxfm')
+        os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile} -applyxfm')
         
         # remove file created with nighres
         os.remove(levelset['result'])
