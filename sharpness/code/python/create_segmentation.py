@@ -13,6 +13,7 @@ from scipy import ndimage
 prefix = '../../../../../../..'
 infile_path = prefix + '/data/projects/ahead/segmentations2/qMRI-Recomputed/'
 segm_path = prefix + '/data/projects/ahead/segmentations2/Automated-Parcellation/qmri2/'
+r1corr_path = prefix + '/data/projects/ahead/raw_gdata/'
 r2star_path = '../../../../data/recon/test_all_3_ssim/R2star_map_gt/'
 mat_path = '../../../../data/converted_mat_echo1/'
 
@@ -23,9 +24,18 @@ infile_directories = [d[1] for d in os.walk(infile_path)][0]
 subjects = ['0'+d[4:] for d in infile_directories]
 mat_directoriess = [f[1] for f in os.walk(mat_path)][0]
 
+r1corr_directories_all = [d[1] for d in os.walk(r1corr_path)][0]
+
+# filter out any directories that do not belong to the subjects we will investigiate 
+r1corr_directories = []
+for r in r1corr_directories_all:
+    if  any(x in r for x in subjects):
+        r1corr_directories.append(r)
+
 # sort files 
 segm_files.sort()
 infile_directories.sort()
+r1corr_directories.sort()
 r2star_files.sort()
 
 # (adjusted) labels (in order) for regions 
@@ -34,31 +44,63 @@ labels_structures = ['','str_hem-l','str_hem-r', 'stn_hem-l','stn_hem-r','sn_hem
                     'ppn_hem-l','ppn_hem-r','cl_hem-l','cl_hem-r']
 
 # iterate over new segmentations, infiles, r2star maps
-for seg, i, r2, mat in zip(segm_files, infile_directories, r2star_files, mat_directoriess):
+for seg, i, r1, r2 in zip(segm_files[2:], infile_directories[2:], r1corr_directories[2:], r2star_files[2:]):
 
     print('Working on', i)
     
     infile = f'{infile_path}{i}/ses-1/anat/wb/qmri/{i}_ses-1_acq-wb2_mod-r1hz_orient-std_brain.nii.gz'
+    r1corr = f'{r1corr_path}{r1}/nii/r1corr.nii'
     r2star_file = f'{r2star_path}{r2}'
-    mat_file = f'{mat_path}{mat}/{mat}_allm.nii'
-    outfile_r2star = f'../../data/coregistration/{i}_outfile_mat.nii'
-    transfile = f'../../data/coregistration/{i}_transform_mat_mat.txt'
     
+    output_dir = '../../data/coregistration/'
+
+    outfile_r1corr = f'{output_dir}{i}/{i}_r1corr_coregistered.nii'
+    outfile_r2star = f'{output_dir}{i}/{i}_r2star_coregistered.nii'
+    transfile = f'{output_dir}{i}/{i}_transform_mat.txt'
+
+    r1corr_std = f'{output_dir}{i}/{i}_r1corr_std.nii'
+
+    if not os.path.exists(f'{output_dir}{i}/segm/'):
+        os.makedirs(f'{output_dir}{i}/segm/')
+
+    # orientate infile to be in standard orientation
+    os.system(f'fslreorient2std {r1corr} {r1corr_std}')
 
     # perform coregistration if this has not been done yet
-    if not os.path.exists(outfile_r2star):
+    if not os.path.exists(outfile_r1corr+'.gz'):
         print('coregistering with mat file')
-        os.system(f'flirt -in {infile} -ref {mat_file} -out {outfile_r2star} -omat {transfile}')
+        os.system(f'flirt -in {infile} -ref {r1corr_std} -out {outfile_r1corr} -omat {transfile}')
 
     # load in binary map
     bin_map_file = nib.load(segm_path + seg)
     bin_map = bin_map_file.get_fdata()
     regions = np.unique(bin_map)
 
+    os.system(f'flirt -in {segm_path + seg} -ref {r1corr_std} -out {output_dir}{i}/{i}_binary_map.nii -init {transfile} -applyxfm')
+
+    coreg_bin_map_file = nib.load(f'{output_dir}{i}/{i}_binary_map.nii.gz')
+    coreg_bin_map = coreg_bin_map_file.get_fdata()
+    coreg_bin_map = coreg_bin_map.astype(np.int64)
+    
+    z = coreg_bin_map.shape[2]
+
+    # flip first and last axes and crop image
+    flipped = np.flip(coreg_bin_map, axis=(0,2))
+    flipped = flipped[:,:,z//2-25:z//2+25]
+
+    # save cropped and flipped image
+    nifti_image = nib.Nifti1Image(dataobj=flipped, header=coreg_bin_map_file.header, affine=coreg_bin_map_file.affine)
+    nib.save(nifti_image, f'{output_dir}{i}/{i}_binary_map.nii.gz')
+
+
+
     # iterate over numbers (aka regions) 
     for r in regions[1:]:
 
         region_name = labels_structures[int(r)]
+
+        # if 'vent' not in region_name:
+        #     continue 
 
         # because the mask is altered, the orignal mask needs to be copied
         working_map = np.copy(bin_map)
@@ -72,14 +114,13 @@ for seg, i, r2, mat in zip(segm_files, infile_directories, r2star_files, mat_dir
         # change back into nifti image (needed for nighres)
         nifti_image = nib.Nifti1Image(dataobj=working_map, header=bin_map_file.header, affine=bin_map_file.affine)
         
-        levelset_outfile = f'{i}_mask-{region_name}_lvlreg-gt_def-img_2.nii'
-        output_dir = '../../data/coregistration/'
+        levelset_outfile = f'{i}_mask-{region_name}_lvlreg-gt_def-img.nii'
 
         # compute distance map from that region 
         levelset = nighres.surface.probability_to_levelset(nifti_image, save_data=True, output_dir=output_dir, file_name=levelset_outfile)
 
         # transform segmented file
-        os.system(f'flirt -in {levelset["result"]} -ref {r2star_file} -out {output_dir+levelset_outfile} -init {transfile} -applyxfm')
+        os.system(f'flirt -in {levelset["result"]} -ref {r1corr_std} -out {output_dir+levelset_outfile} -init {transfile} -applyxfm')
         
         # remove file created with nighres
         os.remove(levelset['result'])
@@ -91,11 +132,12 @@ for seg, i, r2, mat in zip(segm_files, infile_directories, r2star_files, mat_dir
         # sometimes gzip doesn't work, so remove gzp alltogether 
         os.remove(f'{output_dir}{levelset_outfile}.gz')
 
-        # flip any axes?
-        # flipped = np.flip(levelset, axis=(2))
-        flipped = levelset
+        # flip first and last axes and crop image
+        flipped = np.flip(levelset, axis=(0,2))
+        flipped = flipped[:,:,z//2-25:z//2+25]
 
-        # save flipped image
+        # save cropped and flipped image
         nifti_image = nib.Nifti1Image(dataobj=flipped, header=levelset_file.header, affine=levelset_file.affine)
         nib.save(nifti_image, '../../data/segm/'+levelset_outfile)
+        nib.save(nifti_image, f'{output_dir}{i}/segm/{levelset_outfile}')
 

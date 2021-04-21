@@ -7,13 +7,14 @@ import os
 from scipy import ndimage
 from tqdm import tqdm
 
-subj = 64
+subj = 5
+subj2 = 3
 base = '../../../../..'
 segm_path = f'/data/projects/ahead/segmentations/mapped/'
-inv2_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R02/nii/inv2_te1_m_corr.nii'
-r1corr_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R02/nii/r1corr.nii'
-recon_nii_path = f'../../data/recon/test_all_3_ssim/R2star_map_rim/results_Subcortex_00{subj}_axial_loss_mse.nii'
-brain_mask_path = f'/data/projects/ahead/raw_gdata/Subcortex_00{subj}_0{subj}_R02/nii/mask_inv2_te2_m_corr.nii'
+inv2_path = f'/data/projects/ahead/raw_gdata/Subcortex_{subj:04}_0{subj2:03}_R02/nii/inv2_te1_m_corr.nii'
+r1corr_path = f'/data/projects/ahead/raw_gdata/Subcortex_{subj:04}_0{subj2:03}_R02/nii/r1corr.nii'
+recon_nii_path = f'../../data/recon/test_all_3_ssim/R2star_map_rim/results_Subcortex_{subj:04}_axial_loss_mse.nii'
+brain_mask_path = f'/data/projects/ahead/raw_gdata/Subcortex_{subj:04}_{subj2:03}_R02/nii/mask_inv2_te2_m_corr.nii'
 coil_path = '/data/projects/ahead/raw_gdata/Subcortex_0005_002_R02/Subcortex_0005_002_R02_inv2_2_gdataCorrected.nii.gz'
 
 # load in main images 
