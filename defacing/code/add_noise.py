@@ -91,7 +91,7 @@ def add_noise(r_outer, r_inner, plot=False):
             nifit_image = nib.Nifti1Image(dataobj=defaced_image, header=data_load.header, affine=data_load.affine)
             nib.save(img=nifit_image, filename=save_dir)
 
-            save_dir = f'{save_path}/{d}/dilated_no_noise_{d}_inv2_{echo}_gdataCorrected.nii.gz'
+            save_dir = f'{save_path}/{d}/{d}_inv2_{echo}_gdataCorrected_no_noise_.nii.gz'
 
             nifit_image = nib.Nifti1Image(dataobj=no_noise, header=data_load.header, affine=data_load.affine)
             nib.save(img=nifit_image, filename=save_dir)
