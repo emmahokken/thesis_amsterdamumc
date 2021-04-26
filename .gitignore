@@ -130,7 +130,6 @@ dmypy.json
 
 # data
 sharpness/data/
-sharpness/plots_saved/*
-!sharpness/plots_saved/ROIs_anat/
+sharpness/plots_saved/profiles
 defacing/results/dilation/
 defacing/data/
