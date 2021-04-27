@@ -10,14 +10,14 @@ for ii=1:length(AR)
     % compute CRLB
     cbcorr=2*AR{ii}.errcorr./AR{ii}.sigmacorr;
     cbuncorr=2*AR{ii}.erruncorr./AR{ii}.sigmauncorr;
-    medcb(ii,:)=[nanmedian(cbuncorr) nanmedian(cbcorr)];
+    
+    medcb(ii,:)=[nanmedian(cbuncorr) nanmedian(cbcorr)]
 
     % update aggregate test score (binary)
-    disp('temp')
-    tmp=abs(AR{ii}.aggregates{1})
-    tmp4=tmp>=4
+    tmp=abs(AR{ii}.aggregates{1});
+    tmp4=tmp>=4;
     tmp=mod(tmp,4);
-    test=abs(cbcorr)>CRthresh
+    test=abs(cbcorr)>CRthresh;
     agg1=mod(tmp,2)-2*test-4*tmp4
     tmp=abs(AR{ii}.aggregates{2}); 
     tmp4=tmp>=4;

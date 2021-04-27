@@ -41,6 +41,7 @@ FileID.type={'r2star'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
+% FileID.uROIs = {'vent', 'tha', 'str'};
 FileID.uROIs = {'vent'};
 
 
@@ -91,13 +92,13 @@ for ii=subj_ii
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
 
-better_signed{3} = [];
-worse_signed{3} = [];
-brd_crds{3} = [];
-brd_ind{3} = [];
-AR{3} = [];
-numcl(3) = 0;
-mot_mean{3} = [];
+% better_signed{3} = [];
+% worse_signed{3} = [];
+% brd_crds{3} = [];
+% brd_ind{3} = [];
+% AR{3} = [];
+% numcl(3) = 0;
+% mot_mean{3} = [];
 
 
 
