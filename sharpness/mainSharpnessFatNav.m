@@ -36,8 +36,9 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.uIDs={'005'};
+FileID.uIDs={'008'};
 FileID.type={'r2star'};
+FileID.accFactor ={'3'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
@@ -78,7 +79,7 @@ for ii=subj_ii
 
   % do fitting
   [bs,ws,bc,bi,ar_list] = ...
-    getsigmaclusterFatNav(map_corr,data_corr,data_uncorr,pars,field_name,plotsavedir);
+    getsigmaclusterFatNav(map_corr,data_corr,data_uncorr,pars,field_name,plotsavedir, FileID);
     % contine to next iteration if ROI is outside of scan
     if strcmp(bs, 'outside')
         continue
@@ -116,3 +117,5 @@ mot_mean = mot_mean(~cellfun('isempty',mot_mean))
 run statsFatNav
 
 cd('../../')
+
+save('sharpness.mat')
