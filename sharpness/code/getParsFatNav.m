@@ -4,4 +4,4 @@ pars.mrelcb = .5; % maximum size of relative confidence bounds for valid cluster
 pars.wI = 1; % pixel intensity weights for clustering (relative to coordinates)
 pars.numpoints = 500; 
 pars.numIcl = 4; % number of intensity clusters
-pars.border_distance = 1.1;
+pars.border_distance = 1.3;

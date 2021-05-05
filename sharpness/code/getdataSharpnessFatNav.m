@@ -53,14 +53,15 @@ for iROI = 1:length(FileID.uROIs)
         
         % Load uncorrected and corrected data
         cd(datadir)  
-        filenamecorr = [FileID.uIDs{1}, '_', FileID.type{1},'_rim.nii'];
+        filenamecorr = [FileID.uIDs{1}, '_', FileID.type{1},'_rim_', FileID.accFactor{1},'.nii'];
         tmp=load_untouch_nii(filenamecorr);
         voxRes=double(tmp.hdr.dime.dim(2:4));
         subj_data_corr.(nm)=flip(tmp.img,2);
+       
         filenameuncorr = [FileID.uIDs{1},'_',FileID.type{1},'_gt.nii'];
         tmp=load_untouch_nii(filenameuncorr);
         subj_data_uncorr.(nm)=flip(tmp.img,2);
-
+        
         % Load label map (assuming corrected and uncorrected maps identical)
         if strcmp(FileID.uROIs{iROI},cortag)
           ROI=FileID.uROIs{iROI};

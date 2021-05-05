@@ -10,14 +10,14 @@ for ii=1:length(AR)
     % compute CRLB
     cbcorr=2*AR{ii}.errcorr./AR{ii}.sigmacorr;
     cbuncorr=2*AR{ii}.erruncorr./AR{ii}.sigmauncorr;
-    
-    medcb(ii,:)=[nanmedian(cbuncorr) nanmedian(cbcorr)]
+    medcb(ii,:)=[nanmedian(cbuncorr) nanmedian(cbcorr)];
 
     % update aggregate test score (binary)
-    tmp=abs(AR{ii}.aggregates{1});
-    tmp4=tmp>=4;
+    disp('temp')
+    tmp=abs(AR{ii}.aggregates{1})
+    tmp4=tmp>=4
     tmp=mod(tmp,4);
-    test=abs(cbcorr)>CRthresh;
+    test=abs(cbcorr)>CRthresh
     agg1=mod(tmp,2)-2*test-4*tmp4
     tmp=abs(AR{ii}.aggregates{2}); 
     tmp4=tmp>=4;
@@ -52,11 +52,14 @@ relvalid=reshape(relvalid,nROI,[]);
 
 % number of clusters
 ln=ones(length(AR),1); ln(:)=nan;
+
 for ii=1:length(AR)
   try
   ln(ii)=length(AR{ii}.sigmacorr);
   end
 end
+AR{1} 
+ln
 
 ln=reshape(ln,nROI,[]);
 
@@ -133,8 +136,11 @@ disp(num2str(allsigmacorr))
 disp('FWHM difference:')
 disp(num2str(allsigma))
 
+disp('Number of total clusters:')
+disp(num2str(ln'))
 disp('Number of valid clusters:')
 disp(num2str(ln'))
+
 
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))

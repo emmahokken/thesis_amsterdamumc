@@ -1,4 +1,4 @@
-function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_corr, data_corr, data_uncorr, pars, field_name, plotsavedir )
+function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_corr, data_corr, data_uncorr, pars, field_name, plotsavedir, FileID )
 % Calculate sigma for every point near border.
 warning off 
 
@@ -63,7 +63,8 @@ coords_R3 = cat(2, x_R3, y_R3, z_R3)./scale_c;
 %% Clustering
 % check whether ROI lies inside of brain slab
 nPotClusters = cat(2,coords_R3,I_R3_sm);
-if sum(any(~isnan(nPotClusters), 1)) < 4
+% nPotClusters
+if sum(any(~isnan(nPotClusters), 1)) < pars.numIcl
     disp('Too many NaN values --> ROI lies outside of reconstructed image.')
     better_signed = 'outside';
     worse_signed = 'outside';
@@ -124,10 +125,10 @@ for p = 1:2
     map = map_corr; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
     if p==1
         data = data_corr;
-        ctag='corr';
+        ctag=strcat('rim_',FileID.accFactor{1});
     else
         data = data_uncorr;
-        ctag='uncorr';
+        ctag='grappa';
     end
     map(~mask)=mapInf;
 
@@ -154,6 +155,7 @@ for p = 1:2
           Iprof = cat(1,I_R1(ind_R1==tempind(i)),I_R2(ind_R2==i),I_R3(ind_R3subcl==i));
           DTprof = cat(1,DT_R1(ind_R1==tempind(i)),DT_R2(ind_R2==i),DT_R3(ind_R3subcl==i));
           prof_fit{i} = cat(2,DTprof,Iprof);
+          prof_fit{i}
         catch
           keyboard
         end

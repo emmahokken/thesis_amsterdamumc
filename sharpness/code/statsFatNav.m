@@ -49,14 +49,18 @@ nROI=length(mot_mean)/nsubj;
 % relative numberr of valid clusters
 relvalid=cellfun(@sum,validboth)./cellfun(@length,validboth);
 relvalid=reshape(relvalid,nROI,[]);
+% validclust = cellfun(@sum,valid)
 
 % number of clusters
 ln=ones(length(AR),1); ln(:)=nan;
+
 for ii=1:length(AR)
   try
   ln(ii)=length(AR{ii}.sigmacorr);
   end
 end
+AR{1} 
+ln
 
 ln=reshape(ln,nROI,[]);
 
@@ -133,8 +137,11 @@ disp(num2str(allsigmacorr))
 disp('FWHM difference:')
 disp(num2str(allsigma))
 
+disp('Number of total clusters:')
+disp(num2str(ln'))
 disp('Number of valid clusters:')
 disp(num2str(ln'))
+
 
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))

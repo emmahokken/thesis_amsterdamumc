@@ -57,6 +57,7 @@ for iROI = 1:length(FileID.uROIs)
         tmp=load_untouch_nii(filenamecorr);
         voxRes=double(tmp.hdr.dime.dim(2:4));
         subj_data_corr.(nm)=flip(tmp.img,2);
+       
         filenameuncorr = [FileID.uIDs{1},'_',FileID.type{1},'_gt.nii'];
         tmp=load_untouch_nii(filenameuncorr);
         subj_data_uncorr.(nm)=flip(tmp.img,2);
@@ -71,11 +72,11 @@ for iROI = 1:length(FileID.uROIs)
           map_uncorr.(nm) = load_untouch_nii(mapname);
         else
           cd(lbldir)
-          mapname = strjoin({ID, ROI, HEM, char('lvlreg-CORR_def-img.nii')},'_');
+          mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
 %           mapname = strjoin({ID, ROI, HEM, char('lvlreg-corr_def-img.nii')},'_');
           map_corr.(nm) = load_untouch_nii(mapname);
           map_corr.(nm).img = permute(map_corr.(nm).img, [2 3 1]);
-          mapname = strjoin({ID, ROI, HEM, char('lvlreg-UN_def-img.nii')},'_');
+          mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
 %           mapname = strjoin({ID, ROI, HEM, char('lvlreg-uncorr_def-img.nii')},'_');
           map_uncorr.(nm) = load_untouch_nii(mapname);
           map_uncorr.(nm).img = permute(map_uncorr.(nm).img, [2 3 1]);

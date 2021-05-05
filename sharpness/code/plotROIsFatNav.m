@@ -39,7 +39,7 @@ for iSubj=1:nsubj
 
    %ims=im2mat(arr(rgb(tmp(50:10:200,:,:,:)))); 
    %ima=im2mat(arr(rgb(tmp(:,:,:,:)))); 
-   im=im2mat(arr(rgb(tmp(:,:,10:5:50,:)))); 
+   im=im2mat(arr(rgb(tmp(:,:,25,:)))); 
 disp(size(tmp))
 %    im=im2mat(arr(tmp(:,:,50:10:200,:))); 
   %^savenames=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_s.png']);
