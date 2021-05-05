@@ -15,13 +15,14 @@ def add_noise(r_outer, r_inner, plot=False):
     # declare relevant prefixes and directories 
     prefix = '../../../../../..'
     root_path = prefix + '/data/projects/ahead/raw_gdata/'
-    save_path = '../results/dilation/'
+    save_path = prefix + '/data/projects/ahead/defaced/'
 
     # gather all directories 
     directories = [d[1] for d in  os.walk(root_path)][0]
     subjects = ['0004', '0016', '0067', '0083']
-    for d in tqdm(directories): 
-        print(d)
+
+    for d in tqdm(directories[45:]): 
+        # print(d)
         # if not any(x in d for x in subjects):
         #     continue
 
@@ -35,7 +36,7 @@ def add_noise(r_outer, r_inner, plot=False):
 
         # iterate over the four echo times
         for echo in range(1,5):
-            print('Echo:', echo)
+            # print('Echo:', echo)
             file = f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz'
         
             # load specific echo file 
@@ -46,8 +47,8 @@ def add_noise(r_outer, r_inner, plot=False):
 
             defaced_image = []
             no_noise = []
-
-            s = 291
+    
+            s = kspace.shape[2] - 1 # 291
             indices = create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=plot)
     
             # iterate over coils 
@@ -86,7 +87,7 @@ def add_noise(r_outer, r_inner, plot=False):
             # save new scan 
             if not os.path.exists(f'{save_path}{d}'):
                 os.makedirs(f'{save_path}/{d}')
-            save_dir = f'{save_path}/{d}/dilated_{d}_inv2_{echo}_gdataCorrected.nii.gz'
+            save_dir = f'{save_path}/{d}/{d}_inv2_{echo}_gdataCorrected_defaced.nii.gz'
 
             nifit_image = nib.Nifti1Image(dataobj=defaced_image, header=data_load.header, affine=data_load.affine)
             nib.save(img=nifit_image, filename=save_dir)

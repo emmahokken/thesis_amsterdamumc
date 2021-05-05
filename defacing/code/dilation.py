@@ -11,7 +11,7 @@ from tqdm import tqdm
 from defacing import deface
 
 
-def dilate(file_path, kw=5, kh=5, iters=13, brain_mask_type='mask_inv2_te2_m_corr'):
+def dilate(file_path, kw=50, kh=50, iters=1, brain_mask_type='mask_inv2_te2_m_corr'):
 
     # dilation parameters 
     kernel = np.ones((kw,kh), dtype=np.uint8)
@@ -28,7 +28,7 @@ def dilate(file_path, kw=5, kh=5, iters=13, brain_mask_type='mask_inv2_te2_m_cor
     dilation[dilation > 0] = 1
 
     # smooth edges
-    gaus_dilation = cv2.GaussianBlur(dilation, (kw, kh), 0)
+    gaus_dilation = cv2.GaussianBlur(dilation, (5, 5), 0)
 
     # create inverse mask of dilatio
     inv_dilation = abs(dilation - 1)

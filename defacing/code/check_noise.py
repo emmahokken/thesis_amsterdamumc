@@ -21,14 +21,14 @@ def check_noise(plot=False):
     coils = [7,15,23,31]
     n = 50
     s = 140
+    zeroes = np.zeros(32)
 
-    overall_difference_real = {1:[], 2:[], 3:[], 4:[]}
-    overall_difference_imag = {1:[], 2:[], 3:[], 4:[]}
-    overall_percent_real = {1:[], 2:[], 3:[], 4:[]}
-    overall_percent_imag = {1:[], 2:[], 3:[], 4:[]}
+    overall_difference_real = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
+    overall_difference_imag = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
+    overall_percent_real = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
+    overall_percent_imag = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
 
     for d in tqdm(directories):
-        # print(d)
         for echo in range(1,5):
             original = nib.load(f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz').get_fdata(dtype=np.complex64)
             defaced = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_defaced.nii.gz').get_fdata(dtype=np.complex64)
@@ -59,23 +59,29 @@ def check_noise(plot=False):
                 difference_real.append(std_real_def - std_real_orig)
                 difference_imag.append(std_imag_def - std_imag_orig)
 
-                overall_difference_real[echo].append(std_real_def - std_real_orig)
-                overall_difference_imag[echo].append(std_imag_def - std_imag_orig)
 
                 p_real = ((std_real_def - std_real_orig) / ((std_real_def + std_real_orig) / 2)) * 100
                 p_imag = ((std_imag_def - std_imag_orig) / ((std_imag_def + std_imag_orig) / 2)) * 100
                 percent_real.append(p_real)
                 percent_imag.append(p_imag)
 
-                overall_percent_real[echo].append(p_real)
-                overall_percent_imag[echo].append(p_imag)
 
-            # plot_difference_bar(overall_difference_real[1], overall_difference_imag[1], echo)
+            # save overal difference statistics for plotting 
+            overall_difference_real[echo] += difference_real
+            overall_difference_imag[echo] += difference_imag
+            overall_percent_real[echo] += percent_real
+            overall_percent_imag[echo] += percent_imag
 
        
         # print(np.mean(percent_real), np.mean(percent_imag))
 
+
     for echo in range(1,5):
+        overall_difference_real[echo] /= len(directories)
+        overall_difference_imag[echo] /= len(directories)
+        overall_percent_real[echo] /= len(directories)
+        overall_percent_imag[echo] /= len(directories)
+
         plot_difference_bar(overall_difference_real[echo], overall_difference_imag[echo], echo)
         plot_difference_bar(overall_percent_real[echo], overall_percent_imag[echo], echo, percent=True)
 
@@ -103,7 +109,7 @@ def plot_difference_bar(difference_real, difference_imag, echo, percent=False):
     ''' Plots a bar graph showing the difference in background noise for the orignal and the defaced image. '''
 
     x = np.arange(len(difference_real))
-    w = 0.5
+    w = 0.35
 
     fig, ax = plt.subplots()
     fig.set_figwidth(10)
