@@ -155,7 +155,6 @@ for p = 1:2
           Iprof = cat(1,I_R1(ind_R1==tempind(i)),I_R2(ind_R2==i),I_R3(ind_R3subcl==i));
           DTprof = cat(1,DT_R1(ind_R1==tempind(i)),DT_R2(ind_R2==i),DT_R3(ind_R3subcl==i));
           prof_fit{i} = cat(2,DTprof,Iprof);
-          prof_fit{i}
         catch
           keyboard
         end

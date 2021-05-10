@@ -49,6 +49,9 @@ nROI=length(mot_mean)/nsubj;
 % relative numberr of valid clusters
 relvalid=cellfun(@sum,validboth)./cellfun(@length,validboth);
 relvalid=reshape(relvalid,nROI,[]);
+% absolute number of valid clusters 
+validClusters=cellfun(@sum,validboth);
+validClusters=reshape(validClusters,nROI,[]);
 
 % number of clusters
 ln=ones(length(AR),1); ln(:)=nan;
@@ -58,8 +61,6 @@ for ii=1:length(AR)
   ln(ii)=length(AR{ii}.sigmacorr);
   end
 end
-AR{1} 
-ln
 
 ln=reshape(ln,nROI,[]);
 
@@ -124,7 +125,12 @@ i=iSubj;
   
 csigma=csigma(doSubj); cu=cu(doSubj);
 
-%%
+%% Plot stats
+
+
+
+
+%% Display stats
 
 disp('ROIs:')
 disp(fields')
@@ -139,8 +145,7 @@ disp(num2str(allsigma))
 disp('Number of total clusters:')
 disp(num2str(ln'))
 disp('Number of valid clusters:')
-disp(num2str(ln'))
-
+disp(num2str(validClusters'))
 
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))

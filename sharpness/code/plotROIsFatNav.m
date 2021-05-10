@@ -39,14 +39,16 @@ for iSubj=1:nsubj
 
    %ims=im2mat(arr(rgb(tmp(50:10:200,:,:,:)))); 
    %ima=im2mat(arr(rgb(tmp(:,:,:,:)))); 
-   im=im2mat(arr(rgb(tmp(:,:,25,:)))); 
+   imsmall=im2mat(arr(rgb(tmp(100:170,100:180,20,:)))); 
+   imbig=im2mat(arr(rgb(tmp(:,:,20,:)))); 
+
 disp(size(tmp))
 %    im=im2mat(arr(tmp(:,:,50:10:200,:))); 
   %^savenames=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_s.png']);
    %savenamea=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_a.png']);
-   savenamec=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs.png']);
+   savename_small=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_small.png']);
+   savename_big=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_big.png']);
 
-   %imwrite(ims,savenames);
-   %imwrite(ima,savenamea);
-   imwrite(im,savenamec);
+   imwrite(imsmall,savename_small);
+   imwrite(imbig,savename_big);
 end

@@ -13,22 +13,18 @@ for ii=1:length(AR)
     medcb(ii,:)=[nanmedian(cbuncorr) nanmedian(cbcorr)];
 
     % update aggregate test score (binary)
-    disp('temp')
-    tmp=abs(AR{ii}.aggregates{1})
-    tmp4=tmp>=4
+    tmp=abs(AR{ii}.aggregates{1});
+    tmp4=tmp>=4;
     tmp=mod(tmp,4);
-    test=abs(cbcorr)>CRthresh
-    agg1=mod(tmp,2)-2*test-4*tmp4
+    test=abs(cbcorr)>CRthresh;
+    agg1=mod(tmp,2)-2*test-4*tmp4;
     tmp=abs(AR{ii}.aggregates{2}); 
     tmp4=tmp>=4;
     tmp=mod(tmp,4);
     test=abs(cbuncorr)>CRthresh;
-    agg2=mod(tmp,2)-2*test-4*tmp4
+    agg2=mod(tmp,2)-2*test-4*tmp4;
     validboth{ii}=and(~agg1,~agg2);
-    disp('validobth')
-    validboth{ii}
-    disp('don')
-    
+
     sc = AR{ii}.sigmacorr;
     ec = AR{ii}.errcorr;
     su = AR{ii}.sigmauncorr;
@@ -49,7 +45,9 @@ nROI=length(mot_mean)/nsubj;
 % relative numberr of valid clusters
 relvalid=cellfun(@sum,validboth)./cellfun(@length,validboth);
 relvalid=reshape(relvalid,nROI,[]);
-% validclust = cellfun(@sum,valid)
+% absolute number of valid clusters 
+validClusters=cellfun(@sum,validboth);
+validClusters=reshape(validClusters,nROI,[]);
 
 % number of clusters
 ln=ones(length(AR),1); ln(:)=nan;
@@ -59,8 +57,6 @@ for ii=1:length(AR)
   ln(ii)=length(AR{ii}.sigmacorr);
   end
 end
-AR{1} 
-ln
 
 ln=reshape(ln,nROI,[]);
 
@@ -85,7 +81,6 @@ i=iSubj;
       sigm_data = better_signed{fieldind}+worse_signed{fieldind};
       signif = better_signed{fieldind}|worse_signed{fieldind};
       tmp=sigma_diff_signed{fieldind}(validboth{fieldind}>0);
-      validboth{fieldind}
       u=uncertainty{fieldind}(validboth{fieldind}>0);
       try
         csigma{i}=cat(2,csigma{i},FWHM*tmp);
@@ -125,7 +120,15 @@ i=iSubj;
   
 csigma=csigma(doSubj); cu=cu(doSubj);
 
-%%
+%% Plot stats
+
+% disp(fields)
+disp(fields(1:length(allsigmacorr)))
+% disp([allsigmauncorr;allsigmacorr])
+bar(categorical(fields(1:length(allsigmacorr))),[allsigmauncorr;allsigmacorr])
+
+
+%% Display stats
 
 disp('ROIs:')
 disp(fields')
@@ -140,8 +143,7 @@ disp(num2str(allsigma))
 disp('Number of total clusters:')
 disp(num2str(ln'))
 disp('Number of valid clusters:')
-disp(num2str(ln'))
-
+disp(num2str(validClusters'))
 
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))
