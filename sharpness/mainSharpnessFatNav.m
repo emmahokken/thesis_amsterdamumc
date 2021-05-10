@@ -38,12 +38,12 @@ mkdir(plotsavedir)
 % define some subject ID
 FileID.uIDs={'008'};
 FileID.type={'r2star'};
-FileID.accFactor ={'3'};
+FileID.accFactor={'3'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-% FileID.uROIs = {'vent', 'tha', 'str'};
-FileID.uROIs = {'vent'};
+FileID.uROIs = {'vent', 'tha', 'str'};
+% FileID.uROIs = {'vent'};
 
 
 FileID.uHEMs = {'l', 'r','4'};
@@ -93,25 +93,16 @@ for ii=subj_ii
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
 
-% better_signed{3} = [];
-% worse_signed{3} = [];
-% brd_crds{3} = [];
-% brd_ind{3} = [];
-% AR{3} = [];
-% numcl(3) = 0;
-% mot_mean{3} = [];
-
-
 
 % remove any empty cells from arrays
-better_signed = better_signed(~cellfun('isempty',better_signed))
-worse_signed = worse_signed(~cellfun('isempty',worse_signed))
-brd_crds = brd_crds(~cellfun('isempty',brd_crds))
-brd_ind = brd_ind(~cellfun('isempty',brd_ind))
-AR = AR(~cellfun('isempty',AR))
+better_signed = better_signed(~cellfun('isempty',better_signed));
+worse_signed = worse_signed(~cellfun('isempty',worse_signed));
+brd_crds = brd_crds(~cellfun('isempty',brd_crds));
+brd_ind = brd_ind(~cellfun('isempty',brd_ind));
+AR = AR(~cellfun('isempty',AR));
 
-numcl = nonzeros(numcl)
-mot_mean = mot_mean(~cellfun('isempty',mot_mean))
+numcl = nonzeros(numcl);
+mot_mean = mot_mean(~cellfun('isempty',mot_mean));
 
 %% compute and print statistics
 run statsFatNav
