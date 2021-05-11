@@ -122,11 +122,15 @@ csigma=csigma(doSubj); cu=cu(doSubj);
 
 %% Plot stats
 
-% disp(fields)
-disp(fields(1:length(allsigmacorr)))
-% disp([allsigmauncorr;allsigmacorr])
-bar(categorical(fields(1:length(allsigmacorr))),[allsigmauncorr;allsigmacorr])
-
+barColors = {[102 51 153] / 255, [255 191 0] / 255} ;
+b = bar(categorical(fields(1:length(allsigmacorr))),[allsigmauncorr;allsigmacorr]);
+set(b,{'DisplayName'},{'Ground truth','RIM'}')
+legend()
+% for i =1:length([allsigmauncorr;allsigmacorr])
+%     b(i).FaceColor = barColors{mod(i,length(barColors)+1)};    
+% end
+barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
+saveas(gcf,barFileName);
 
 %% Display stats
 
@@ -147,4 +151,8 @@ disp(num2str(validClusters'))
 
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))
-
+% fields = cell2mat(fields')
+asc = reshape(allsigmacorr,[],1);
+asu = reshape(allsigmauncorr,[],1);
+tabl = table(asu, asc)
+writetable(tabl,strcat('../../',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM.csv'),'WriteRowNames',true)

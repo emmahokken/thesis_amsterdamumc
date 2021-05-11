@@ -60,7 +60,7 @@ coords_R2 = cat(2, x_R2, y_R2, z_R2)./scale_c;
 [x_R3, y_R3, z_R3] = ind2sub(size(map),find(R3_val~=0));
 coords_R3 = cat(2, x_R3, y_R3, z_R3)./scale_c;
 
-%% Clustering
+%% Check cluster 
 % check whether ROI lies inside of brain slab
 nPotClusters = cat(2,coords_R3,I_R3_sm);
 % nPotClusters
@@ -74,6 +74,7 @@ if sum(any(~isnan(nPotClusters), 1)) < pars.numIcl
     return
 end
 
+%% Clustering
 % First kmeans-clustering: on intensity value
 ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
 ind_R3subcl = ind_R3; % used for subclustering. 
