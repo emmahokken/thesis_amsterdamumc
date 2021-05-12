@@ -1,4 +1,4 @@
-function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_corr, data_corr, data_uncorr, pars, field_name, plotsavedir, FileID )
+function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_corr, map_uncorr, data_corr, data_uncorr, pars, field_name, plotsavedir, FileID )
 % Calculate sigma for every point near border.
 warning off 
 
@@ -28,8 +28,8 @@ data_uncorr(~mask)=0;
 
 % Load and scale data. Clustering is done on corrected data. Can be changed
 % to uncorrected data.
-map = map_corr;
-data = data_corr;
+map = map_uncorr;
+data = data_uncorr;
 map(~mask)=mapInf; %saturate padding zeroes in map
 
 % Define scaling factors and scale data
@@ -75,35 +75,50 @@ if sum(any(~isnan(nPotClusters), 1)) < pars.numIcl
 end
 
 %% Clustering
-% First kmeans-clustering: on intensity value
-ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
-ind_R3subcl = ind_R3; % used for subclustering. 
 
-% Second k-means clustering: cluster intensity clusters on spatial
-% coordinates. The number of subclusters is determined by the clustersize.
-k_subcl = zeros(1,k_R3);
-C_reps = [];
-I_inds = [];
 
-for i = 1:k_R3
-    numpoints = length(nonzeros(ind_R3==i));
-    k_subcl(i) = ceil(numpoints./cluster_size);
-    [ind_rep,C_rep] = kmeans(coords_R3(ind_R3==i,:),k_subcl(i), 'MaxIter', 1000, 'Replicates', 10);
-    
-    % Correct the index values to avoid subclusters of different intensity
-    % clusters having the same index.
-    valcor = sum(k_subcl(1:i))-k_subcl(i);
-    ind_rep = ind_rep+valcor;
-    ind_R3subcl(ind_R3==i)=ind_rep;
-    
-    C_reps = cat(1,C_reps,C_rep);
-    I_inds = cat(2,I_inds,i.*ones(1,k_subcl(i)));
+% Check if param file exists 
+kmeans_file = strcat('../variables/', field_name, '_kmeans_vars.mat');
+
+delete(kmeans_file);
+
+% Perform clustering if file does not exist 
+if isfile(kmeans_file) == 0
+    % First kmeans-clustering: on intensity value
+    ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
+    ind_R3subcl = ind_R3; % used for subclustering.
+
+    % Second k-means clustering: cluster intensity clusters on spatial
+    % coordinates. The number of subclusters is determined by the clustersize.
+    k_subcl = zeros(1,k_R3);
+    C_reps = [];
+    I_inds = [];
+
+    for i = 1:k_R3
+        numpoints = length(nonzeros(ind_R3==i));
+        k_subcl(i) = ceil(numpoints./cluster_size);
+        [ind_rep,C_rep] = kmeans(coords_R3(ind_R3==i,:),k_subcl(i), 'MaxIter', 1000, 'Replicates', 10);
+
+        % Correct the index values to avoid subclusters of different intensity
+        % clusters having the same index.
+        valcor = sum(k_subcl(1:i))-k_subcl(i);
+        ind_rep = ind_rep+valcor;
+        ind_R3subcl(ind_R3==i)=ind_rep;
+
+        C_reps = cat(1,C_reps,C_rep);
+        I_inds = cat(2,I_inds,i.*ones(1,k_subcl(i)));
+    end
+    save(kmeans_file,'ind_R3subcl','k_subcl','I_inds','coords_R1','coords_R2','coords_R3','R1_map', 'R2_map','R3_map')
 end
+
+% Load variables from file to ensure stable kmeans clustering over
+% accelrration factors 
+load(kmeans_file);
+
 k_tot = sum(k_subcl);
 tempind = 1:k_tot; % when ROI is very small, use tempind = I_inds
 
 % Propagate clustering to R1 and R2, get border coordinates and indices.
-
 R2toR3 = knnsearch(coords_R3,coords_R2);
 ind_R2 = ind_R3subcl(R2toR3);
 R1toR2 = knnsearch(coords_R2,coords_R1);
@@ -123,7 +138,7 @@ valid_comp = cell(1,2);
 n_invalid = zeros(1,2);
 aggregates = cell(1,2);
 for p = 1:2
-    map = map_corr; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
+    map = map_uncorr; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
     if p==1
         data = data_corr;
         ctag=strcat('rim_',FileID.accFactor{1});

@@ -38,7 +38,7 @@ mkdir(plotsavedir)
 % define some subject ID
 FileID.uIDs={'008'};
 FileID.type={'r2star'};
-FileID.accFactor={'3'};
+FileID.accFactor={'12'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
@@ -79,7 +79,7 @@ for ii=subj_ii
 
   % do fitting
   [bs,ws,bc,bi,ar_list] = ...
-    getsigmaclusterFatNav(map_corr,data_corr,data_uncorr,pars,field_name,plotsavedir, FileID);
+    getsigmaclusterFatNav(map_corr,map_uncorr,data_corr,data_uncorr,pars,field_name,plotsavedir, FileID);
     % contine to next iteration if ROI is outside of scan
     if strcmp(bs, 'outside')
         continue
@@ -93,7 +93,7 @@ for ii=subj_ii
   mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
 
-
+fields = fields(~cellfun('isempty',better_signed));
 % remove any empty cells from arrays
 better_signed = better_signed(~cellfun('isempty',better_signed));
 worse_signed = worse_signed(~cellfun('isempty',worse_signed));
