@@ -121,14 +121,18 @@ i=iSubj;
 csigma=csigma(doSubj); cu=cu(doSubj);
 
 %% Plot stats
-
+a = [allsigmauncorr;allsigmacorr];
+a = a.';
+a
 barColors = {[102 51 153] / 255, [255 191 0] / 255} ;
-b = bar(categorical(fields(1:length(allsigmacorr))),[allsigmauncorr;allsigmacorr]);
+b = bar(categorical(fields),[allsigmauncorr;allsigmacorr].');
 set(b,{'DisplayName'},{'Ground truth','RIM'}')
 legend()
 % for i =1:length([allsigmauncorr;allsigmacorr])
 %     b(i).FaceColor = barColors{mod(i,length(barColors)+1)};    
 % end
+title(strcat('FWHM of different structures for ',FileID.accFactor{1}, 'x acceleration'));
+ylabel('Sharpness in FWHM')
 barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
 saveas(gcf,barFileName);
 
