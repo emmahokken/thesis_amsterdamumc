@@ -13,6 +13,7 @@ from dilation import dilate
 # decalre root path and scan type
 root_path = '../../../../../data/projects/ahead/raw_gdata'
 scan_type = 'inv1_te1_m_corr'
+# scan_type = 't1corr'
 brain_mask_type = 'mask_inv2_te2_m_corr'
 save_path = '../defacing/dilation'
 subject = 'Subcortex_0005_002_R02'
@@ -28,19 +29,27 @@ brain_mask_nii = nib.load(brain_mask_path)
 brain_mask = brain_mask_nii.get_fdata()
 inv2_nii = nib.load(scan_path)
 inv2 = inv2_nii.get_fdata()
+# inv2 = np.moveaxis(inv2, 2, 0)
+# brain_mask = np.moveaxis(brain_mask, 2, 0)
 
 # dilate brain mask and fill in with (second inversion) scan 
-dilation_five, inv_five = dilate(f'{root_path}/{subject}', kw=20, kh=20, iters=1)
-dilation_ten, inv_ten = dilate(f'{root_path}/{subject}', kw=35, kh=35, iters=1)
-dilation_fifteen, inv_fifteen = dilate(f'{root_path}/{subject}', kw=50, kh=50, iters=1)
-dilation_twenty, inv_twenty = dilate(f'{root_path}/{subject}', kw=65, kh=65, iters=1)
+dilation_five, inv_five = dilate(f'{root_path}/{subject}', save_mask=False, iters=5)
+dilation_ten, inv_ten = dilate(f'{root_path}/{subject}', save_mask=False,iters=10)
+dilation_fifteen, inv_fifteen = dilate(f'{root_path}/{subject}', save_mask=False, iters=15)
+dilation_twenty, inv_twenty = dilate(f'{root_path}/{subject}', save_mask=False, iters=20)
 
-# dilate with 20x20 kernel
-dilation_mask_five = cv2.dilate(brain_mask, kernel_five, iterations=13)
-filled_in_five = dilation_twenty*inv2
-dilation_mask_fifty = cv2.dilate(brain_mask, kernel_fifty, iterations=1)
-filled_in_fifty = dilation_twenty*inv2
-difference = dilation_mask_fifty - dilation_mask_five
+# dil = inv2*dilation_fifteen
+# plt.imshow(dil[:,:,120])
+# plt.show()
+# nif = nib.Nifti1Image(dil, affine=inv2_nii.affine, header=inv2_nii.header)
+# nib.save(nif,'triedilated_in12.nii')
+
+# # dilate with 20x20 kernel
+# dilation_mask_five = cv2.dilate(brain_mask, kernel_five, iterations=13)
+# filled_in_five = dilation_twenty*inv2
+# dilation_mask_fifty = cv2.dilate(brain_mask, kernel_fifty, iterations=1)
+# filled_in_fifty = dilation_twenty*inv2
+# difference = dilation_mask_fifty - dilation_mask_five
 
 # plt.imshow(ndimage.rotate(difference[:,:,63], 90), cmap='gray')
 # plt.show()
@@ -56,6 +65,8 @@ difference = dilation_mask_fifty - dilation_mask_five
 # plt.show()
 s = 74
 
+
+''' PLOT DIFFERENT ITERATIONS '''
 plt.subplot(231)
 plt.imshow(ndimage.rotate((brain_mask*inv2)[:,:,s], 90), cmap='gray')
 plt.axis('off')
@@ -63,19 +74,19 @@ plt.title('Brain mask')
 plt.subplot(232)
 plt.imshow(ndimage.rotate((dilation_five*inv2)[:,:,s], 90), cmap='gray')
 plt.axis('off')
-plt.title('20x20 kernel')
+plt.title('5 iterations')
 plt.subplot(233)
 plt.imshow(ndimage.rotate((dilation_ten*inv2)[:,:,s], 90), cmap='gray')
 plt.axis('off')
-plt.title('35x35 kernel')
+plt.title('10 iterations')
 plt.subplot(234)
 plt.imshow(ndimage.rotate((dilation_fifteen*inv2)[:,:,s], 90), cmap='gray')
 plt.axis('off')
-plt.title('50x50 kernel')
+plt.title('15 iterations')
 plt.subplot(235)
 plt.imshow(ndimage.rotate((dilation_twenty*inv2)[:,:,s], 90), cmap='gray')
 plt.axis('off')
-plt.title('65x65 kernel')
+plt.title('20 iterations')
 plt.subplot(236)
 plt.imshow(ndimage.rotate((inv2)[:,:,s], 90), cmap='gray')
 plt.axis('off')
@@ -83,7 +94,36 @@ plt.title('Full image')
 plt.savefig('../results/figures/kernel_size_kernels=15-60.pdf')
 plt.show()
 
+''' PLOT DIFFERENT PLANES MASK '''
+plt.subplot(231)
+plt.title('Sagital view')
+plt.imshow(ndimage.rotate((brain_mask)[:,:,74],90), cmap='gray', aspect='auto')
+plt.xticks([])
+plt.yticks([])
+plt.ylabel('Original', rotation=0, labelpad=30)
+plt.subplot(234)
+plt.imshow(ndimage.rotate((dilation_ten)[:,:,74],90), cmap='gray', aspect='auto')
+plt.xticks([])
+plt.yticks([])
+plt.ylabel('Dilated', rotation=0, labelpad=30)
+plt.subplot(232)
+plt.title('Coronal view')
+plt.imshow(ndimage.rotate((brain_mask)[49,:,:],180), cmap='gray', aspect='auto')
+plt.axis('off')
+plt.subplot(235)
+plt.imshow(ndimage.rotate((dilation_ten)[49,:,:],180), cmap='gray', aspect='auto')
+plt.axis('off')
+plt.subplot(233)
+plt.title('Axial view')
+plt.imshow(ndimage.rotate((brain_mask)[:,61,:],180), cmap='gray', aspect='auto')
+plt.axis('off')
+plt.subplot(236)
+plt.imshow(ndimage.rotate((dilation_ten)[:,61,:],180), cmap='gray', aspect='auto')
+plt.axis('off')
+plt.savefig('../results/figures/dilation_different_planes_scipy_mask.pdf')
+plt.show()
 
+''' PLOT DIFFERENT PLANES SCAN '''
 plt.subplot(231)
 plt.title('Sagital view')
 plt.imshow(ndimage.rotate((inv2)[:,:,74],90), cmap='gray', aspect='auto')
@@ -91,7 +131,7 @@ plt.xticks([])
 plt.yticks([])
 plt.ylabel('Original', rotation=0, labelpad=30)
 plt.subplot(234)
-plt.imshow(ndimage.rotate((dilation_fifteen*inv2)[:,:,74],90), cmap='gray', aspect='auto')
+plt.imshow(ndimage.rotate((dilation_ten*inv2)[:,:,74],90), cmap='gray', aspect='auto')
 plt.xticks([])
 plt.yticks([])
 plt.ylabel('Dilated', rotation=0, labelpad=30)
@@ -100,14 +140,14 @@ plt.title('Coronal view')
 plt.imshow(ndimage.rotate((inv2)[49,:,:],180), cmap='gray', aspect='auto')
 plt.axis('off')
 plt.subplot(235)
-plt.imshow(ndimage.rotate((dilation_fifteen*inv2)[49,:,:],180), cmap='gray', aspect='auto')
+plt.imshow(ndimage.rotate((dilation_ten*inv2)[49,:,:],180), cmap='gray', aspect='auto')
 plt.axis('off')
 plt.subplot(233)
 plt.title('Axial view')
 plt.imshow(ndimage.rotate((inv2)[:,61,:],180), cmap='gray', aspect='auto')
 plt.axis('off')
 plt.subplot(236)
-plt.imshow(ndimage.rotate((dilation_fifteen*inv2)[:,61,:],180), cmap='gray', aspect='auto')
+plt.imshow(ndimage.rotate((dilation_ten*inv2)[:,61,:],180), cmap='gray', aspect='auto')
 plt.axis('off')
-plt.savefig('../results/figures/dilation_different_planes.pdf')
+plt.savefig('../results/figures/dilation_different_planes_scipy_scan.pdf')
 plt.show()

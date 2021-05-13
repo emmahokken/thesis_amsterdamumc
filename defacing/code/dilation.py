@@ -11,11 +11,11 @@ from tqdm import tqdm
 from defacing import deface
 
 
-def dilate(file_path, kw=50, kh=50, iters=1, brain_mask_type='mask_inv2_te2_m_corr'):
+def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=15, brain_mask_type='mask_inv2_te2_m_corr'):
 
     # dilation parameters 
-    kernel = np.ones((kw,kh), dtype=np.uint8)
-  
+    kernel = np.ones((kw,kh,kd), dtype=np.uint8)
+
     # get brain mask and scan from within directory
     brain_mask_path = f'{file_path}/nii/{brain_mask_type}.nii'
 
@@ -24,15 +24,28 @@ def dilate(file_path, kw=50, kh=50, iters=1, brain_mask_type='mask_inv2_te2_m_co
     brain_mask = brain_mask_nii.get_fdata()
 
     # dilate brain mask and correct to 1 (was 0.999...)
-    dilation = cv2.dilate(brain_mask, kernel, iterations=iters)
+    dilation = ndimage.binary_dilation(brain_mask, kernel, iterations=iters)
     dilation[dilation > 0] = 1
 
+    # plt.imshow(dilation[:,130,:])
+    # plt.show()
+    
     # smooth edges
-    gaus_dilation = cv2.GaussianBlur(dilation, (5, 5), 0)
+    gaus_dilation = cv2.GaussianBlur(np.float32(dilation), (5, 5), 0)
 
     # create inverse mask of dilatio
-    inv_dilation = abs(dilation - 1)
+    inv_dilation = abs(gaus_dilation - 1)
     inv_dilation[inv_dilation < 1] = 0
+    
+    # gaus_dilation = np.moveaxis(gaus_dilation, 2, 0)
+    # inv_dilation = np.moveaxis(inv_dilation, 2, 0)
+
+    # gaus_dilation = np.fliplr(gaus_dilation)
+    # inv_dilation = np.fliplr(inv_dilation)
+
+    if save_mask:
+        nifti_image = nib.Nifti1Image(gaus_dilation, header=brain_mask_nii.header, affine=brain_mask_nii.affine)
+        nib.save(nifti_image, f'{save_path}/{brain_mask_type}_dilated.nii')
     
     return gaus_dilation, inv_dilation
 
