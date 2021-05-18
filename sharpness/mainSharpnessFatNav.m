@@ -38,74 +38,84 @@ mkdir(plotsavedir)
 % define some subject ID
 FileID.subjectIDs={'025','018'};
 FileID.type={'r2star'};
-FileID.accFactor={'12'};
+FileID.accFactors={'3','6','9','12'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-FileID.uROIs = {'vent', 'tha', 'str','gpi','gpe'};
+FileID.uROIs = {'vent', 'tha', 'str','gp'};
 % FileID.uROIs = {'vent'};
 FileID.uHEMs = {'l', 'r','4'};
 
-[map_corrall, t1_corrall, map_uncorrall, t1_uncorrall, MPos, voxRes] = ...
-  getdataSharpnessFatNav(FileID, subjdir, 1);
-fields = fieldnames(map_uncorrall);
-% parameters
-run getParsFatNav
+% Iterate over all subjects
+for subject=1:length(FileID.subjectIDs)
+    FileID.uIDs = {FileID.subjectIDs{subject}};
+    % Iterate over acceleration factors
+    for accF=1:length(FileID.accFactors)
+        FileID.accFactor={FileID.accFactors{accF}};
 
-%% plot ROIs and save to pngs
-run plotROIsFatNav
+        [map_corrall, t1_corrall, map_uncorrall, t1_uncorrall, MPos, voxRes] = ...
+          getdataSharpnessFatNav(FileID, subjdir, 1);
+        fields = fieldnames(map_uncorrall);
+        % parameters
+        run getParsFatNav
 
-%% initialize
-nsubj=1;
-doSubj=1;
+        %% plot ROIs and save to pngs
+        run plotROIsFatNav
 
-better_signed = cell(1,length(fields));
-worse_signed = cell(1,length(fields));
-AR = cell(1,length(fields));
+        %% initialize
+        nsubj=1;
+        doSubj=1;
 
-%% run
-subj_ii = find(~cellfun(@isempty,strfind(fields,FileID.uIDs{1})))';
+        better_signed = cell(1,length(fields));
+        worse_signed = cell(1,length(fields));
+        AR = cell(1,length(fields));
 
-% loop over ROIs
-for ii=subj_ii
-  % get data
-  field_name = fields{ii};
-  map_corr = map_corrall.(fields{ii}).img;
-  data_corr = t1_corrall.(fields{ii});
+        %% run
+        subj_ii = find(~cellfun(@isempty,strfind(fields,FileID.uIDs{1})))';
 
-  map_uncorr = map_uncorrall.(fields{ii}).img;
-  data_uncorr = t1_uncorrall.(fields{ii});
+        % loop over ROIs
+        for ii=subj_ii
+          % get data
+          field_name = fields{ii};
+          map_corr = map_corrall.(fields{ii}).img;
+          data_corr = t1_corrall.(fields{ii});
 
-  % do fitting
-  [bs,ws,bc,bi,ar_list] = ...
-    getsigmaclusterFatNav(map_corr,map_uncorr,data_corr,data_uncorr,pars,field_name,plotsavedir, FileID);
-    % contine to next iteration if ROI is outside of scan
-    if strcmp(bs, 'outside')
-        continue
+          map_uncorr = map_uncorrall.(fields{ii}).img;
+          data_uncorr = t1_uncorrall.(fields{ii});
+
+          % do fitting
+          [bs,ws,bc,bi,ar_list] = ...
+            getsigmaclusterFatNav(map_corr,map_uncorr,data_corr,data_uncorr,pars,field_name,plotsavedir, FileID);
+            % contine to next iteration if ROI is outside of scan
+            if strcmp(bs, 'outside')
+                continue
+            end
+
+            [better_signed{ii},worse_signed{ii},brd_crds{ii},brd_ind{ii},AR{ii}] = ...
+                deal(bs,ws,bc,bi,ar_list);
+
+          % get motion parameters
+          numcl(ii) = length(better_signed{ii});
+          mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
+        end
+
+        fields = fields(~cellfun('isempty',better_signed));
+        % remove any empty cells from arrays
+        better_signed = better_signed(~cellfun('isempty',better_signed));
+        worse_signed = worse_signed(~cellfun('isempty',worse_signed));
+        brd_crds = brd_crds(~cellfun('isempty',brd_crds));
+        brd_ind = brd_ind(~cellfun('isempty',brd_ind));
+        AR = AR(~cellfun('isempty',AR));
+
+        numcl = nonzeros(numcl);
+        mot_mean = mot_mean(~cellfun('isempty',mot_mean));
+
+        %% compute and print statistics
+        run statsFatNav
+
+        cd('../../')
+
+        save('sharpness.mat')
+
     end
-    
-    [better_signed{ii},worse_signed{ii},brd_crds{ii},brd_ind{ii},AR{ii}] = ...
-        deal(bs,ws,bc,bi,ar_list);
-
-  % get motion parameters
-  numcl(ii) = length(better_signed{ii});
-  mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
 end
-
-fields = fields(~cellfun('isempty',better_signed));
-% remove any empty cells from arrays
-better_signed = better_signed(~cellfun('isempty',better_signed));
-worse_signed = worse_signed(~cellfun('isempty',worse_signed));
-brd_crds = brd_crds(~cellfun('isempty',brd_crds));
-brd_ind = brd_ind(~cellfun('isempty',brd_ind));
-AR = AR(~cellfun('isempty',AR));
-
-numcl = nonzeros(numcl);
-mot_mean = mot_mean(~cellfun('isempty',mot_mean));
-
-%% compute and print statistics
-run statsFatNav
-
-cd('../../')
-
-save('sharpness.mat')
