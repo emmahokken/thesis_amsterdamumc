@@ -156,7 +156,8 @@ disp(num2str(validClusters'))
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))
 % fields = cell2mat(fields')
+% fields = strsplit(fields,FileID.uIDs{1});
 asc = reshape(allsigmacorr,[],1);
 asu = reshape(allsigmauncorr,[],1);
-tabl = table(asu, asc)
+tabl = table(fields, asu, asc)
 writetable(tabl,strcat('../../',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM.csv'),'WriteRowNames',true)

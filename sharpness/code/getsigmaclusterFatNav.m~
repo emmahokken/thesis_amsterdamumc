@@ -1,4 +1,4 @@
-function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_rim, map_gt, data_rim, data_gt, pars, field_name, plotsavedir, FileID )
+function [ better_signed, worse_signed, brd_crds, brd_ind, AddRes ] = getsigmaclusterFatNav( map_corr, map_uncorr, data_corr, data_uncorr, pars, field_name, plotsavedir, FileID )
 % Calculate sigma for every point near border.
 warning off 
 
@@ -19,17 +19,28 @@ cluster_size = pars.numpoints;
 %     data_uncorr = permute(data_uncorr,[3 1 2]);
 % end
 
-mask=data_gt>0;
+% Check if param file exists 
+kmeans_file = strcat('../variables/', field_name, '_kmeans_vars.mat');
+
+% delete(kmeans_file);
+
+% Perform clustering if file does not exist 
+if isfile(kmeans_file) == 1
+    load(kmeans_file);
+else
+    mask=data_uncorr>0;
+end
+
 frac=sum(mask(:))/numel(mask);
 disp(['Union mask of data_corr and data_uncorr percentage: ' num2str(frac)])
 % mask data
-data_rim(~mask)=0;
-data_gt(~mask)=0;
+data_corr(~mask)=0;
+data_uncorr(~mask)=0;
 
 % Load and scale data. Clustering is done on corrected data. Can be changed
 % to uncorrected data.
-map = map_gt;
-data = data_gt;
+map = map_uncorr;
+data = data_uncorr;
 map(~mask)=mapInf; %saturate padding zeroes in map
 
 % Define scaling factors and scale data
@@ -76,11 +87,6 @@ end
 
 %% Clustering
 
-% Check if param file exists 
-kmeans_file = strcat('../variables/', field_name, '_kmeans_vars.mat');
-
-% delete(kmeans_file);
-
 % Perform clustering if file does not exist 
 if isfile(kmeans_file) == 0
     % First kmeans-clustering: on intensity value
@@ -107,7 +113,7 @@ if isfile(kmeans_file) == 0
         C_reps = cat(1,C_reps,C_rep);
         I_inds = cat(2,I_inds,i.*ones(1,k_subcl(i)));
     end
-    save(kmeans_file,'ind_R3subcl','k_subcl','I_inds')
+    save(kmeans_file,'ind_R3subcl','k_subcl','I_inds','coords_R1','coords_R2','coords_R3','R1_map', 'R2_map','R3_map', 'mask')
 end
 
 % Load variables from file to ensure stable kmeans clustering over
@@ -116,6 +122,9 @@ load(kmeans_file);
 
 k_tot = sum(k_subcl);
 tempind = 1:k_tot; % when ROI is very small, use tempind = I_inds
+
+disp(size(coords_R3))
+disp(size(R3_map))
 
 % Propagate clustering to R1 and R2, get border coordinates and indices.
 R2toR3 = knnsearch(coords_R3,coords_R2);
@@ -137,12 +146,12 @@ valid_comp = cell(1,2);
 n_invalid = zeros(1,2);
 aggregates = cell(1,2);
 for p = 1:2
-    map = map_gt; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
+    map = map_uncorr; % map_corr is used here, as it was used for clustering as well. map_corr and map_uncorr are expected to be nearly identical.
     if p==1
-        data = data_rim;
+        data = data_corr;
         ctag=strcat('rim_',FileID.accFactor{1});
     else
-        data = data_gt;
+        data = data_uncorr;
         ctag='grappa';
     end
     map(~mask)=mapInf;

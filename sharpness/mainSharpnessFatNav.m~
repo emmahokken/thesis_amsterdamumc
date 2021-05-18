@@ -36,7 +36,7 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.subjectIDs={'025','018'};
+FileID.uIDs={'025'};
 FileID.type={'r2star'};
 FileID.accFactor={'12'};
 
@@ -44,8 +44,9 @@ FileID.accFactor={'12'};
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
 FileID.uROIs = {'vent', 'tha', 'str','gpi','gpe'};
 % FileID.uROIs = {'vent'};
-FileID.uHEMs = {'l', 'r','4'};
 
+
+FileID.uHEMs = {'l', 'r','4'};
 [map_corrall, t1_corrall, map_uncorrall, t1_uncorrall, MPos, voxRes] = ...
   getdataSharpnessFatNav(FileID, subjdir, 1);
 fields = fieldnames(map_uncorrall);
