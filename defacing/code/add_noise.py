@@ -10,8 +10,17 @@ from tqdm import tqdm
 from dilation import dilate
 
 
-def add_noise(r_outer, r_inner, plot=False):
-        
+def main_defacing(r_outer, r_inner, plot=False):
+    '''
+    Main functionality of the defacing algorithm. The algorithm defaces an MR image using dilation 
+    and then adds generated noise the the background. 
+    Saves the newly defaced image at the end of the algorithm. 
+    
+    Args: 
+        r_outer: outer index value of the k-space ring used to calculate noise STD (should be <= 234/2)
+        r_inner: inner index value of the k-space ring used to calculate noise STD (should be >= 0)
+    '''
+
     # declare relevant prefixes and directories 
     prefix = '../../../../../..'
     root_path = prefix + '/data/projects/ahead/raw_gdata/'
@@ -21,18 +30,14 @@ def add_noise(r_outer, r_inner, plot=False):
     directories = [d[1] for d in  os.walk(root_path)][0]
     subjects = ['0004', '0016', '0067', '0083']
 
-    for d in tqdm(directories[45:]): 
+    for d in tqdm(directories): 
         # print(d)
         # if not any(x in d for x in subjects):
         #     continue
 
         # get dilated brain mask for defacing and reorient axes
-        dilation, inv_dilation = dilate(f'{root_path}{d}')
-        dilation = np.moveaxis(dilation, 2, 0)
-        inv_dilation = np.moveaxis(inv_dilation, 2, 0)
-
-        dilation = np.fliplr(dilation)
-        inv_dilation = np.fliplr(inv_dilation)
+        dilation, inv_dilation = dilate(f'{root_path}{d}', f'{save_path}{d}')
+        
 
         # iterate over the four echo times
         for echo in range(1,5):
@@ -62,13 +67,10 @@ def add_noise(r_outer, r_inner, plot=False):
                 without_noise = dilated_data.copy()
                 no_noise.append(without_noise)
 
-                # imspace = np.fft.ifftshift(np.fft.ifftn(np.fft.fftshift(kspace[x_mid-25:x_mid+25,y_mid-25:y_mid+25,290,coil]), norm='ortho'))
                 # calculate std for noise generation 
                 std_real = np.std(kspace[indices[0], indices[1], s, coil].real)
                 std_imag = np.std(kspace[indices[0], indices[1], s, coil].imag)
                 
-                # print('STD real:', std_real)
-                # print('STD imag:', std_imag)
                 # generate new Gaussian noise from that distribution and make space for brain in noise
                 noise_real = np.random.normal(0, std_real, coil_data.shape) * inv_dilation
                 noise_imag = np.random.normal(0, std_imag, coil_data.shape) * inv_dilation
@@ -78,9 +80,7 @@ def add_noise(r_outer, r_inner, plot=False):
                 dilated_data.imag += noise_imag
                 
                 defaced_image.append(dilated_data)
-            
-            # print('Done with coils.')
-
+        
             defaced_image = np.moveaxis(np.array(defaced_image), 0, 3)
             no_noise = np.moveaxis(np.array(no_noise), 0, 3)
 
@@ -100,16 +100,19 @@ def add_noise(r_outer, r_inner, plot=False):
 
 
 def create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=False):
-    ''' Create the mask used to gather noise statistics from kspace. 
+    ''' 
+    Create the mask used to gather noise statistics from kspace. 
     
     Args: 
         data: MRI data
+        kspace: kspace data
         outer_h, outer_w, inner_h, inner_w: measurements of the box that is used to calculate STD
         s: slice to plot
         plot: whether to plot the box, default set to False
     
     Returns: 
-        indices: indices of the kspace mask  ''' 
+        indices: indices of the kspace mask  
+    ''' 
 
     # determine middle for noise generation 
     x_mid = data.shape[0] // 2
@@ -140,9 +143,10 @@ def create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=False):
 
 
 if __name__ == '__main__':
-
- 
+    
+    # TODO: add argparse? 
+    
     r_outer = 117
     r_inner = 90
 
-    add_noise(r_outer, r_inner, plot=False)
+    main_defacing(r_outer, r_inner, plot=False)
