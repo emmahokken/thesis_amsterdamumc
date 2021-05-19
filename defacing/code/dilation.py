@@ -11,8 +11,23 @@ from tqdm import tqdm
 from defacing import deface
 
 
-def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=15, brain_mask_type='mask_inv2_te2_m_corr'):
+def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=10, brain_mask_type='mask_inv2_te2_m_corr'):
+    ''' 
+    Dilate a given brain mask. 
 
+    Args: 
+        file_path: file path to the brain mask 
+        save_path: file path to save the dilated brain mask to. default is current directory.
+        save_mask: boolean value whether to save the mask
+        kw, kh, kd: dimensions (width x height x depth) of dilation kernel
+        iters: the number of iterations dilation should be applied for. default is 15.
+        brain_mask_type: filename of brain mask. default is 'mask_inv2_te2_m_corr'.
+
+    Returns: 
+        gaus_dilation: smoothed and dilated brain mask
+        inv_dilation: inverse of the smoothed and dilated brain mask 
+    '''
+    
     # dilation parameters 
     kernel = np.ones((kw,kh,kd), dtype=np.uint8)
 
@@ -37,11 +52,11 @@ def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=15, 
     inv_dilation = abs(gaus_dilation - 1)
     inv_dilation[inv_dilation < 1] = 0
     
-    # gaus_dilation = np.moveaxis(gaus_dilation, 2, 0)
-    # inv_dilation = np.moveaxis(inv_dilation, 2, 0)
+    gaus_dilation = np.moveaxis(gaus_dilation, 2, 0)
+    inv_dilation = np.moveaxis(inv_dilation, 2, 0)
 
-    # gaus_dilation = np.fliplr(gaus_dilation)
-    # inv_dilation = np.fliplr(inv_dilation)
+    gaus_dilation = np.fliplr(gaus_dilation)
+    inv_dilation = np.fliplr(inv_dilation)
 
     if save_mask:
         nifti_image = nib.Nifti1Image(gaus_dilation, header=brain_mask_nii.header, affine=brain_mask_nii.affine)
