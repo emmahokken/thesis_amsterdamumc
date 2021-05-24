@@ -31,21 +31,14 @@ for iSubj=1:nsubj
    tmp(ROImap>0,:)=tmp(ROImap>0,:)+cl(ROImap(ROImap>0),:);
    tmp=reshape(tmp,[sz 3]);
    tmp=tmp/max(tmp(:));
-   disp(size(tmp))
-   disp('after some things')
    % permute to show reconsttucted images properly 
-%    tmp=permute(tmp,[2 1 3 4]);
    tmp=permute(tmp,[3 1 2 4]);
 
    %ims=im2mat(arr(rgb(tmp(50:10:200,:,:,:)))); 
    %ima=im2mat(arr(rgb(tmp(:,:,:,:)))); 
    imsmall=im2mat(arr(rgb(tmp(100:170,100:180,20,:)))); 
-   imbig=im2mat(arr(rgb(tmp(:,:,20,:)))); 
+   imbig=im2mat(arr(rgb(tmp(:,:,1:4:40,:)))); 
 
-disp(size(tmp))
-%    im=im2mat(arr(tmp(:,:,50:10:200,:))); 
-  %^savenames=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_s.png']);
-   %savenamea=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_a.png']);
    savename_small=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_small.png']);
    savename_big=fullfile(savedir,[FileID.uIDs{iSubj} '_ROIs_big.png']);
 

@@ -4,6 +4,7 @@ FWHM=0.7*2.355; % conversion sigma to FWHM, given imaging resolution of 0.7 mm
 %% calculate some pre-stats
 CRthresh=pars.mrelcb;
 
+
 % first corr, then uncorr
 for ii=1:length(AR)
   if ~isempty(AR{ii})
@@ -23,7 +24,7 @@ for ii=1:length(AR)
     tmp=mod(tmp,4);
     test=abs(cbuncorr)>CRthresh;
     agg2=mod(tmp,2)-2*test-4*tmp4;
-    validboth{ii}=and(~agg1,~agg2);
+    validboth{ii}=and(~agg1,~agg2)
 
     sc = AR{ii}.sigmacorr;
     ec = AR{ii}.errcorr;
@@ -41,7 +42,9 @@ for ii=1:length(AR)
   end
 end
 
+
 nROI=length(mot_mean)/nsubj;
+
 % relative numberr of valid clusters
 relvalid=cellfun(@sum,validboth)./cellfun(@length,validboth);
 relvalid=reshape(relvalid,nROI,[]);
@@ -121,17 +124,16 @@ i=iSubj;
 csigma=csigma(doSubj); cu=cu(doSubj);
 
 %% Plot stats
-a = [allsigmauncorr;allsigmacorr];
-a = a.';
-a
+
 barColors = {[102 51 153] / 255, [255 191 0] / 255} ;
 b = bar(categorical(fields),[allsigmauncorr;allsigmacorr].');
 set(b,{'DisplayName'},{'Ground truth','RIM'}')
 legend()
-% for i =1:length([allsigmauncorr;allsigmacorr])
-%     b(i).FaceColor = barColors{mod(i,length(barColors)+1)};    
-% end
-title(strcat('FWHM of different structures for ',FileID.accFactor{1}, 'x acceleration'));
+for i =1:2
+    set(b(i),'CData',barColors{i});
+    set(b(i),'FaceColor','flat');
+end
+title(strcat('FWHM of different structures for', {' '},FileID.accFactor{1}, 'x acceleration'));
 ylabel('Sharpness in FWHM')
 barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
 saveas(gcf,barFileName);
@@ -155,9 +157,15 @@ disp(num2str(validClusters'))
 
 disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))
-% fields = cell2mat(fields')
-% fields = strsplit(fields,FileID.uIDs{1});
-asc = reshape(allsigmacorr,[],1);
-asu = reshape(allsigmauncorr,[],1);
-tabl = table(fields, asu, asc)
-writetable(tabl,strcat('../../',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM.csv'),'WriteRowNames',true)
+
+%% Create table for satistical analysis 
+sigma_rim = reshape(allsigmacorr,[],1);
+sigma_gt = reshape(allsigmauncorr,[],1);
+
+acc_factor = zeros(size(sigma_rim));
+acc_factor(acc_factor==0) = str2num(FileID.accFactor{1});
+subj_id = zeros(size(sigma_rim));
+subj_id(subj_id==0) = str2num(FileID.uIDs{1});
+
+tabl = table(subj_id,fields, sigma_rim, sigma_gt,acc_factor)
+writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM.csv'),'WriteRowNames',true)

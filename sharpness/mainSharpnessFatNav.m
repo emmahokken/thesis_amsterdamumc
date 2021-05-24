@@ -36,7 +36,8 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.subjectIDs={'025','018'};
+FileID.subjectIDs={'005','008','018','025','031','064','077','098','105'};
+% FileID.subjectIDs={'098','105'};
 FileID.type={'r2star'};
 FileID.accFactors={'3','6','9','12'};
 
@@ -51,7 +52,7 @@ for subject=1:length(FileID.subjectIDs)
     FileID.uIDs = {FileID.subjectIDs{subject}};
     % Iterate over acceleration factors
     for accF=1:length(FileID.accFactors)
-        FileID.accFactor={FileID.accFactors{accF}};
+        FileID.accFactor = {FileID.accFactors{accF}};
 
         [map_corrall, t1_corrall, map_uncorrall, t1_uncorrall, MPos, voxRes] = ...
           getdataSharpnessFatNav(FileID, subjdir, 1);
@@ -65,18 +66,21 @@ for subject=1:length(FileID.subjectIDs)
         %% initialize
         nsubj=1;
         doSubj=1;
-
+        
+        % Initialise arrays 
         better_signed = cell(1,length(fields));
         worse_signed = cell(1,length(fields));
         AR = cell(1,length(fields));
-
+        mot_mean = cell(1, length(fields));
+        numcl = zeros(1,length(fields));
+        
         %% run
         subj_ii = find(~cellfun(@isempty,strfind(fields,FileID.uIDs{1})))';
 
         % loop over ROIs
         for ii=subj_ii
           % get data
-          field_name = fields{ii};
+          field_name = fields{ii}
           map_corr = map_corrall.(fields{ii}).img;
           data_corr = t1_corrall.(fields{ii});
 
@@ -97,8 +101,9 @@ for subject=1:length(FileID.subjectIDs)
           % get motion parameters
           numcl(ii) = length(better_signed{ii});
           mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
+          
         end
-
+        
         fields = fields(~cellfun('isempty',better_signed));
         % remove any empty cells from arrays
         better_signed = better_signed(~cellfun('isempty',better_signed));
@@ -109,13 +114,13 @@ for subject=1:length(FileID.subjectIDs)
 
         numcl = nonzeros(numcl);
         mot_mean = mot_mean(~cellfun('isempty',mot_mean));
-
+        
         %% compute and print statistics
         run statsFatNav
 
         cd('../../')
 
-        save('sharpness.mat')
+%         save('sharpness.mat')
 
     end
 end

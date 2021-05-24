@@ -76,10 +76,12 @@ for iROI = 1:length(FileID.uROIs)
 %           mapname = strjoin({ID, ROI, HEM, char('lvlreg-corr_def-img.nii')},'_');
           map_corr.(nm) = load_untouch_nii(mapname);
           map_corr.(nm).img = permute(map_corr.(nm).img, [2 3 1]);
+          map_corr.(nm).img = map_corr.(nm).img(:,end:-1:1,end:-1:1);
           mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
 %           mapname = strjoin({ID, ROI, HEM, char('lvlreg-uncorr_def-img.nii')},'_');
           map_uncorr.(nm) = load_untouch_nii(mapname);
           map_uncorr.(nm).img = permute(map_uncorr.(nm).img, [2 3 1]);
+          map_uncorr.(nm).img = map_uncorr.(nm).img(:,end:-1:1,end:-1:1);
         end
         % Alternative way to store MPos data, now with same indexing as
         % other data
