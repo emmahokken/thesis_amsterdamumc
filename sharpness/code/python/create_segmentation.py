@@ -33,25 +33,31 @@ def create_segmentation(create_gp=False):
     gp_labels = ['gp_hem-l','gp_hem-r']
 
     # iterate over new segmentations, infiles, r2star maps
-    for seg, i, r1 in zip(segm_files[2:], infile_directories[2:], r1corr_directories[2:]):
+    for seg, i, r1 in zip(segm_files, infile_directories, r1corr_directories):
 
         print('Working on', i)
 
         r1corr_std = f'{output_dir}{i}/{i}_r1corr_std.nii'       
+        transfile = f'{output_dir}{i}/{i}_transform_mat.txt'
 
         # perform coregistration on files 
-        coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1corr_std)
+        coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1corr_std, transfile)
 
         # load in binary map
         bin_map_file = nib.load(segm_path + seg)
         bin_map = bin_map_file.get_fdata()
         regions = np.unique(bin_map)
-
+        
+        # z = bin_map.shape[2]
+        count = 0 
+        
         # iterate over numbers (aka regions) 
         for r in regions[1:]:
 
             region_name = labels_structures[int(r)]
-
+            # if 'str' not in region_name:
+            #     continue 
+            
             if create_gp:
                 if 'gp' not in region_name:
                     continue 
@@ -100,7 +106,9 @@ def create_segmentation(create_gp=False):
             os.remove(f'{output_dir}{levelset_outfile}.gz')
 
             # flip first and last axes and crop image
-            flipped = np.flip(levelset, axis=(0,2))
+            # flipped = np.flip(levelset, axis=(2))
+            flipped = levelset 
+            z = flipped.shape[2]
             flipped = flipped[:,:,z//2-25:z//2+25]
 
             # save cropped and flipped image
@@ -147,7 +155,7 @@ def load_files(infile_path, segm_path, r1corr_path):
     return segm_files, infile_directories, r1corr_directories
 
 
-def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1corr_std):
+def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1corr_std, transfile):
     '''
     Perform coregistration of two scans. Needed to transform levelset later on.
     
@@ -165,7 +173,6 @@ def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1co
     infile = f'{infile_path}{i}/ses-1/anat/wb/qmri/{i}_ses-1_acq-wb2_mod-r1hz_orient-std_brain.nii.gz'
     r1corr = f'{r1corr_path}{r1}/nii/r1corr.nii'
     outfile_r1corr = f'{output_dir}{i}/{i}_r1corr_coregistered.nii'
-    transfile = f'{output_dir}{i}/{i}_transform_mat.txt'
 
     if not os.path.exists(f'{output_dir}{i}/segm/'):
         os.makedirs(f'{output_dir}{i}/segm/')
@@ -186,7 +193,7 @@ def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1co
     z = coreg_bin_map.shape[2]
 
     # flip first and last axes and crop image
-    flipped = np.flip(coreg_bin_map, axis=(0,2))
+    flipped = np.flip(coreg_bin_map, axis=(2))
     flipped = flipped[:,:,z//2-25:z//2+25]
 
     # save cropped and flipped image
@@ -195,4 +202,4 @@ def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1co
 
 
 if __name__ == '__main__':
-    create_segmentation(create_gp=False)
+    create_segmentation(create_gp=True)
