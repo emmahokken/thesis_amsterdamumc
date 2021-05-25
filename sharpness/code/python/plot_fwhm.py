@@ -75,6 +75,18 @@ def plot_per_region(df, version):
     plt.show()
 
 
+def boxplot(df):
+
+
+    df.boxplot(column=['sigma_rim'],by='acc_factor', grid=False, boxprops=dict(color='orange'),whiskerprops=dict(color='orange'),medianprops=dict(color='rebeccapurple'))
+    plt.title('Boxplot showing sharpness in FWHM per acceleration factor.')
+    plt.suptitle('')
+    plt.xlabel('Acceleration factor')
+    plt.ylabel('Sharpness in FWHM')
+    plt.savefig(f'../../plots_saved/FWHM_boxplot.pdf')
+    plt.show()
+
+
 if __name__ == '__main__':
 
     subj = 25
