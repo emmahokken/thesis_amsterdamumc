@@ -256,10 +256,10 @@ AddRes.('crdindicesR1') = indsR1; % coordinate indices of R1
 AddRes.('indR1') = ind_R1; % cluster indication of subclusters
 AddRes.('Iinds') = I_inds; % cluster indication of intensity clusters
 
-AddRes.('sigmacorr') = sigma_comp{1}; % sigma for corrected data
-AddRes.('errcorr') = err_comp{1}; % fit error for corrected data
-AddRes.('sigmauncorr') = sigma_comp{2}; % sigma for uncorrected data
-AddRes.('erruncorr') = err_comp{2}; % fit error for uncorrected data
+AddRes.('sigmarim') = sigma_comp{1}; % sigma for reconstructed data
+AddRes.('errrim') = err_comp{1}; % fit error for reconstructed data
+AddRes.('sigmagt') = sigma_comp{2}; % sigma for ground truth data
+AddRes.('errgt') = err_comp{2}; % fit error for ground truth data
 AddRes.('sigmadiff') = sigma_diff_abs; % absolute squared difference in sigma
 AddRes.('sigmadiff_signed') = sigma_diff_signed; % signed squared difference in sigma
 AddRes.('uncertainty') = unc; % uncertainty. Not sure if it is relevant

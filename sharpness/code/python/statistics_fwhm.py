@@ -9,21 +9,27 @@ from statsmodels.stats.anova import AnovaRM
 import plot_fwhm 
 
 def main():
-    # subjects = [5, 8, 18, 25, 31, 64, 77, 98, 105]
-    subjects = [5,8]
+    subjects = [5, 8, 18, 25, 31, 64, 77, 98, 105]
+    # subjects = [5,8]
     
     # gather data
-    sharpness = read_data(subjects)
-    print(sharpness.columns)
+    df = read_data(subjects)
+    print(df.columns)
     # caclulate basic stats
-    mean_gt = sharpness.sigma_gt.mean()
-    mean_rim = sharpness.sigma_rim.mean()
-    std_gt = sharpness.sigma_gt.std()
-    std_rim = sharpness.sigma_rim.std()
-
-    ventricles = sharpness.loc[(sharpness.fields == 'ventl') | (sharpness.fields =='ventr')]
-    plot_fwhm.plot_fwhm_per_subject(sharpness, 5)
-    plot_fwhm.plot_per_region(sharpness)
+    mean_gt = df.sigma_gt.mean()
+    mean_rim = df.sigma_rim.mean()
+    std_gt = df.sigma_gt.std()
+    std_rim = df.sigma_rim.std()
+    
+    ventricles = df.loc[(df.fields == 'ventl') | (df.fields =='ventr')]
+    plot_fwhm.plot_fwhm_per_subject(df, 8)
+    plot_fwhm.plot_per_region(df.loc[df.fields != 'vent4'], 'gt')
+    plot_fwhm.plot_per_region(df.loc[df.fields != 'vent4'], 'rim')
+    # for s in subjects:
+    #     a = df.loc[(df.fields == 'strr') & (df.subj_id == s)]
+    #     print(a)
+    #     plt.plot(a.sigma_gt)
+    #     plt.show()
 
 def remove_subj(field):
     return field[4:]

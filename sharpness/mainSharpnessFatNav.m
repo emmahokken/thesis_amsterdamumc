@@ -36,15 +36,15 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-FileID.subjectIDs={'005','008','018','025','031','064','077','098','105'};
-% FileID.subjectIDs={'098','105'};
+% FileID.subjectIDs={'005','008','018','025','031','064','077','098','105'};
+FileID.subjectIDs={'105','098'};
 FileID.type={'r2star'};
 FileID.accFactors={'3','6','9','12'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-FileID.uROIs = {'vent', 'tha', 'str','gp'};
-% FileID.uROIs = {'vent'};
+% FileID.uROIs = {'vent', 'tha', 'str', 'gp'};
+FileID.uROIs = {'str'};
 FileID.uHEMs = {'l', 'r','4'};
 
 % Iterate over all subjects
@@ -54,9 +54,9 @@ for subject=1:length(FileID.subjectIDs)
     for accF=1:length(FileID.accFactors)
         FileID.accFactor = {FileID.accFactors{accF}};
 
-        [map_corrall, t1_corrall, map_uncorrall, t1_uncorrall, MPos, voxRes] = ...
+        [map_rimall, t1_rimall, map_gtall, t1_gtall, MPos, voxRes] = ...
           getdataSharpnessFatNav(FileID, subjdir, 1);
-        fields = fieldnames(map_uncorrall);
+        fields = fieldnames(map_gtall);
         % parameters
         run getParsFatNav
 
@@ -81,15 +81,15 @@ for subject=1:length(FileID.subjectIDs)
         for ii=subj_ii
           % get data
           field_name = fields{ii}
-          map_corr = map_corrall.(fields{ii}).img;
-          data_corr = t1_corrall.(fields{ii});
+          map_rim = map_rimall.(fields{ii}).img;
+          data_rim = t1_rimall.(fields{ii});
 
-          map_uncorr = map_uncorrall.(fields{ii}).img;
-          data_uncorr = t1_uncorrall.(fields{ii});
+          map_gt = map_gtall.(fields{ii}).img;
+          data_gt = t1_gtall.(fields{ii});
 
           % do fitting
           [bs,ws,bc,bi,ar_list] = ...
-            getsigmaclusterFatNav(map_corr,map_uncorr,data_corr,data_uncorr,pars,field_name,plotsavedir, FileID);
+            getsigmaclusterFatNav(map_rim,map_gt,data_rim,data_gt,pars,field_name,plotsavedir, FileID);
             % contine to next iteration if ROI is outside of scan
             if strcmp(bs, 'outside')
                 continue
@@ -100,7 +100,7 @@ for subject=1:length(FileID.subjectIDs)
 
           % get motion parameters
           numcl(ii) = length(better_signed{ii});
-          mot_mean{ii} = getmotionFatNav(map_corrall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
+          mot_mean{ii} = getmotionFatNav(map_rimall.(fields{ii}).img,brd_crds{ii},MPos.(fields{ii}),voxRes);
           
         end
         

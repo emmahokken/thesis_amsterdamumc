@@ -14,8 +14,8 @@ for iSubj=1:nsubj
    idx=0;
    for iROI=subj
      idx=idx+1;
-     map_corr = map_corrall.(fields{iROI}).img;
-     p=(map_corr<0) .* (map_corr>-2);
+     map_rim = map_rimall.(fields{iROI}).img;
+     p=(map_rim<0) .* (map_rim>-2);
      p=p>0;
      if idx==1
        ROImap=double(p);
@@ -25,7 +25,7 @@ for iSubj=1:nsubj
    end
    sz=size(ROImap);
    ROImap=ROImap(:);
-   d = t1_corrall.(fields{iROI});
+   d = t1_rimall.(fields{iROI});
    d(d>p_thresh)=p_thresh;d=d/p_thresh; % normalize and clip
    tmp=repmat(d(:),[1 3]);
    tmp(ROImap>0,:)=tmp(ROImap>0,:)+cl(ROImap(ROImap>0),:);

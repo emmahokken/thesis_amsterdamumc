@@ -10,7 +10,7 @@ for d in dirs:
     acc = [a for a in d.split('_') if a.isdigit()][0]
     print(acc)
     gt = [f[2] for f in os.walk(f'../../data/recon/{d}/R2star_map_gt')][0]
-    rim = [f[2] for f in os.walk(f'../../data/recon/{d}/R2star_map_gt')][0]
+    rim = [f[2] for f in os.walk(f'../../data/recon/{d}/R2star_map_rim')][0]
     # print(rim)
     
     # for r in rim:

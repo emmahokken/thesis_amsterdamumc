@@ -1,4 +1,4 @@
-function [ map_corr, subj_data_corr, map_uncorr, subj_data_uncorr, MPos,voxRes] = getdata( FileID, subjdir, varargin)
+function [ map_rim, subj_data_corr, map_gt, subj_data_uncorr, MPos,voxRes] = getdata( FileID, subjdir, varargin)
 % Get data for FileID. Output: label map (distance transform), t1_corr
 % data, r1/t1_uncorr data and MPos motion parameters.
 %
@@ -67,26 +67,25 @@ for iROI = 1:length(FileID.uROIs)
           ROI=FileID.uROIs{iROI};
           cd(lbldir)
           mapname=[ID '_t1corr_cruise-' ROI '_ants-def0.nii'];
-          map_corr.(nm) = load_untouch_nii(mapname);
+          map_rim.(nm) = load_untouch_nii(mapname);
           mapname=[ID '_t1uncorr_cruise-' ROI '_ants-def0.nii'];
-          map_uncorr.(nm) = load_untouch_nii(mapname);
+          map_gt.(nm) = load_untouch_nii(mapname);
         else
           cd(lbldir)
           mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
 %           mapname = strjoin({ID, ROI, HEM, char('lvlreg-corr_def-img.nii')},'_');
-          map_corr.(nm) = load_untouch_nii(mapname);
-          map_corr.(nm).img = permute(map_corr.(nm).img, [2 3 1]);
-          map_corr.(nm).img = map_corr.(nm).img(:,end:-1:1,end:-1:1);
+          map_rim.(nm) = load_untouch_nii(mapname);
+          map_rim.(nm).img = permute(map_rim.(nm).img, [2 3 1]);
+          map_rim.(nm).img = map_rim.(nm).img(:,end:-1:1,end:-1:1);
           mapname = strjoin({ID, ROI, HEM, char('lvlreg-gt_def-img.nii')},'_');
 %           mapname = strjoin({ID, ROI, HEM, char('lvlreg-uncorr_def-img.nii')},'_');
-          map_uncorr.(nm) = load_untouch_nii(mapname);
-          map_uncorr.(nm).img = permute(map_uncorr.(nm).img, [2 3 1]);
-          map_uncorr.(nm).img = map_uncorr.(nm).img(:,end:-1:1,end:-1:1);
+          map_gt.(nm) = load_untouch_nii(mapname);
+          map_gt.(nm).img = permute(map_gt.(nm).img, [2 3 1]);
+          map_gt.(nm).img = map_gt.(nm).img(:,end:-1:1,end:-1:1);
         end
         % Alternative way to store MPos data, now with same indexing as
         % other data
         MPos.(nm) = mpars.MPos;
-%         disp(size(map_corr.(nm).img))
       end
     end
 end
