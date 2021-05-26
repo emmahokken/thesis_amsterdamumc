@@ -106,8 +106,7 @@ def create_segmentation(create_gp=False):
             os.remove(f'{output_dir}{levelset_outfile}.gz')
 
             # flip first and last axes and crop image
-            # flipped = np.flip(levelset, axis=(2))
-            flipped = levelset 
+            flipped = np.flip(levelset, axis=(0,2))
             z = flipped.shape[2]
             flipped = flipped[:,:,z//2-25:z//2+25]
 
@@ -193,8 +192,7 @@ def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1co
     z = coreg_bin_map.shape[2]
 
     # flip first and last axes and crop image
-    # flipped = np.flip(coreg_bin_map, axis=(0,2))
-    flipped = coreg_bin_map
+    flipped = np.flip(coreg_bin_map, axis=(0,2))
     flipped = flipped[:,:,z//2-25:z//2+25]
 
     # save cropped and flipped image
