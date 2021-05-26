@@ -26,18 +26,18 @@ for ii=1:length(AR)
     agg2=mod(tmp,2)-2*test-4*tmp4;
     validboth{ii}=and(~agg1,~agg2);
 
-    sc = AR{ii}.sigmarim;
-    ec = AR{ii}.errrim;
-    su = AR{ii}.sigmagt;
-    eu = AR{ii}.errgt;
-    unc = sqrt(abs(1./(su.^2-sc.^2).*(su.^2.*eu.^2+sc.^2.*ec.^2)));
+    sr = AR{ii}.sigmarim;
+    er = AR{ii}.errrim;
+    sg = AR{ii}.sigmagt;
+    eg = AR{ii}.errgt;
+    unc = sqrt(abs(1./(sg.^2-sr.^2).*(sg.^2.*eg.^2+sr.^2.*er.^2)));
 
-    sigma_diff_abs = validboth{ii}.*sqrt(abs(su.^2-sc.^2));
-    signed_indication = 2.*((su.^2-sc.^2)>0)-1; % 1 if better, -1 if worse
+    sigma_diff_abs = validboth{ii}.*sqrt(abs(sg.^2-sr.^2));
+    signed_indication = 2.*((sg.^2-sr.^2)>0)-1; % 1 if better, -1 if worse
     sigma_diff_signed{ii} = signed_indication.*sigma_diff_abs;
 
-    better_signed{ii} = validboth{ii}.*sigma_diff_signed{ii}.*((su-eu)>(sc+ec));
-    worse_signed{ii} = validboth{ii}.*sigma_diff_signed{ii}.*((sc-ec)>(su+eu));
+    better_signed{ii} = validboth{ii}.*sigma_diff_signed{ii}.*((sg-eg)>(sr+er));
+    worse_signed{ii} = validboth{ii}.*sigma_diff_signed{ii}.*((sr-er)>(sg+eg));
     uncertainty{ii} = validboth{ii}.*unc;
   end
 end
@@ -77,7 +77,8 @@ i=iSubj;
       inds = j;
       fieldinds = subj(inds);
       sigm_plot = []; sigm_mean_plot=[]; 
-      sigm_rim=[]; sigm_gt=[];
+      sigm_rim=[]; sigm_gt=[]; 
+        
       mot_plot = []; mot_mean_plot=[];
       k = 1;
       fieldind = fieldinds(k);
@@ -102,7 +103,7 @@ i=iSubj;
       mot_add = ones(sum(signif),1)*mot_mean{fieldind}; 
       mot_plot = cat(2,mot_plot,mot_add');
       plot_sigma = cat(2,plot_sigma,sigm_mean_plot);
-   
+    
       plot_u=cat(2,plot_u,uplot);
       plot_motion = cat(2,plot_motion,mot_mean_plot);
       plot_sigma_rim = cat(2,plot_sigma_rim,sigm_rim);
@@ -125,18 +126,18 @@ csigma=csigma(doSubj); cu=cu(doSubj);
 
 %% Plot stats
 
-barColors = {[102 51 153] / 255, [255 191 0] / 255} ;
-b = bar(categorical(fields),[allsigmagt;allsigmarim].');
-set(b,{'DisplayName'},{'Ground truth','RIM'}')
-legend()
-for i =1:2
-    set(b(i),'CData',barColors{i});
-    set(b(i),'FaceColor','flat');
-end
-title(strcat('FWHM of different structures for', {' '},FileID.accFactor{1}, 'x acceleration'));
-ylabel('Sharpness in FWHM')
-barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
-saveas(gcf,barFileName);
+% barColors = {[102 51 153] / 255, [255 191 0] / 255};
+% b = bar(categorical(fields),[allsigmagt;allsigmarim].');
+% set(b,{'DisplayName'},{'Ground truth','RIM'}')
+% legend()
+% for i =1:2
+%     set(b(i),'CData',barColors{i});
+%     set(b(i),'FaceColor','flat');
+% end
+% title(strcat('FWHM of different structures for', {' '},FileID.accFactor{1}, 'x acceleration'));
+% ylabel('Sharpness in FWHM')
+% barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
+% saveas(gcf,barFileName);
 
 %% Display stats
 
@@ -159,13 +160,21 @@ disp('Relative nr of valid clusters:')
 disp(num2str(relvalid'))
 
 %% Create table for satistical analysis 
-sigma_rim = reshape(allsigmarim,[],1);
-sigma_gt = reshape(allsigmagt,[],1);
 
-acc_factor = zeros(size(sigma_rim));
+% Write ground truth data once to file 
+if FileID.accFactor{1} == '3'
+    sigma = reshape(allsigmagt,[],1);
+    acc_factor = zeros(size(sigma));
+    subj_id = zeros(size(sigma));
+    subj_id(subj_id==0) = str2num(FileID.uIDs{1});
+    tabl = table(subj_id, fields, sigma, acc_factor)
+    writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_0_FWHM_new.csv'),'WriteRowNames',true)
+end 
+sigma = reshape(allsigmarim,[],1);
+acc_factor = zeros(size(sigma));
 acc_factor(acc_factor==0) = str2num(FileID.accFactor{1});
-subj_id = zeros(size(sigma_rim));
+subj_id = zeros(size(sigma));
 subj_id(subj_id==0) = str2num(FileID.uIDs{1});
 
-tabl = table(subj_id,fields, sigma_rim, sigma_gt,acc_factor)
-writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM.csv'),'WriteRowNames',true)
+tabl = table(subj_id,fields, sigma, acc_factor)
+writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_new.csv'),'WriteRowNames',true)
