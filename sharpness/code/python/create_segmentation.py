@@ -193,7 +193,8 @@ def coregister(segm_path, infile_path, r1corr_path, seg, i, r1, output_dir, r1co
     z = coreg_bin_map.shape[2]
 
     # flip first and last axes and crop image
-    flipped = np.flip(coreg_bin_map, axis=(2))
+    # flipped = np.flip(coreg_bin_map, axis=(0,2))
+    flipped = coreg_bin_map
     flipped = flipped[:,:,z//2-25:z//2+25]
 
     # save cropped and flipped image
