@@ -1,7 +1,6 @@
-import csv 
-from collections import defaultdict
-import numpy as np
 import matplotlib.pyplot as plt 
+import numpy as np
+import pandas as pd 
 
 def plot_fwhm_per_subject(df, subj):
     '''
@@ -13,7 +12,6 @@ def plot_fwhm_per_subject(df, subj):
     '''
     
     fwhm = df.loc[(df.subj_id == subj) & (df.fields != 'ventl') &  (df.fields != 'ventr')]
-    print(fwhm)
   
     plt.scatter(fwhm.acc_factor, fwhm.sigma_gt, c='rebeccapurple', marker='o', label='GT')
     plt.scatter(fwhm.acc_factor, fwhm.sigma_rim, c='orange', marker='^', label='RIM')
@@ -76,21 +74,26 @@ def plot_per_region(df, version):
 
 
 def boxplot(df):
+    '''
+    Generate a boxplot for the FWHM data
 
+    Args:
+        df: DataFrame object containing FWHM information
+    '''
 
-    df.boxplot(column=['sigma_rim'],by='acc_factor', grid=False, boxprops=dict(color='orange'),whiskerprops=dict(color='orange'),medianprops=dict(color='rebeccapurple'))
-    plt.title('Boxplot showing sharpness in FWHM per acceleration factor.')
+    def return_one(x):
+        return 1
+
+    sigma_rim = df.drop(columns=['sigma_gt'])
+    sigma_gt = df[df.acc_factor == 3].drop(columns=['sigma_rim'])
+    sigma_gt.acc_factor = sigma_gt.acc_factor.apply(return_one)
+    sigma_gt = sigma_gt.rename(columns={'sigma_gt': 'sigma_rim'})
+    df = pd.concat([sigma_gt, sigma_rim])
+
+    df.boxplot(column=['sigma_rim'],by='acc_factor', grid=True, boxprops=dict(color='orange'),whiskerprops=dict(color='orange'),medianprops=dict(color='rebeccapurple'))
+    plt.title('Distribution of sharpness in FWHM per acceleration factor.')
     plt.suptitle('')
     plt.xlabel('Acceleration factor')
     plt.ylabel('Sharpness in FWHM')
     plt.savefig(f'../../plots_saved/FWHM_boxplot.pdf')
     plt.show()
-
-
-if __name__ == '__main__':
-
-    subj = 25
-    begin = 3
-    stop = 12
-
-    plot_fwhm(subj, begin, stop)
