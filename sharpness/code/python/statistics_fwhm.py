@@ -6,7 +6,7 @@ import pandas as pd
 import scipy
 from statsmodels.stats.anova import AnovaRM 
 
-import plot_fwhm 
+from plot_fwhm import *
 
 def main():
     subjects = [5, 8, 18, 25, 31, 64, 77, 98, 105]
@@ -14,7 +14,7 @@ def main():
     
     # gather data
     df = read_data(subjects)
-    print(df.columns)
+
     # caclulate basic stats
     mean_gt = df.sigma_gt.mean()
     mean_rim = df.sigma_rim.mean()
@@ -24,12 +24,13 @@ def main():
     ventricles = df.loc[(df.fields == 'ventl') | (df.fields =='ventr')]
     gp = df.loc[(df.fields == 'gpl') | (df.fields == 'gpr')]
     df = determine_outliers(df)
-    # t_test(df)
-    print(df[df.fields == 'thal'])
-    # plot_fwhm.plot_fwhm_per_subject(df, 8)
-    plot_fwhm.plot_per_region(df.loc[df.fields != 'vent4'], 'gt')
-    # plot_fwhm.plot_per_region(df.loc[df.fields != 'vent4'], 'rim')
-    plot_fwhm.boxplot(df)
+    t_test(df)
+    # linreg(df)
+    # plot_fwhm_per_subject(df, 8)
+    # plot_per_region(df.loc[df.fields != 'vent4'], 'gt')
+    # plot_per_region(df.loc[df.fields != 'vent4'], 'rim')
+    boxplot(df)
+    # scatter_fwhm(df)
     # for s in subjects:
     #     a = df.loc[(df.fields == 'strr') & (df.subj_id == s)]
     #     print(a)
@@ -52,8 +53,8 @@ def determine_outliers(df):
             if len(sigma_gt.unique()) > 1:
                 for val in sigma_gt.unique():
                     if len(sigma_gt[sigma_gt == val]) < 3:
-                        ind = sigma_gt[sigma_gt == val].index
-                        df = df.drop(ind)
+                        # ind = sigma_gt[sigma_gt == val].index
+                        df = df.drop(sigma_gt.index)
                         break 
 
     return df 
@@ -79,19 +80,27 @@ def t_test(df):
     '''
 
     globus = df[(df.fields == 'gpl') | (df.fields == 'gpr')]
+    globus_3_12 = globus[(globus.acc_factor == 3) | (globus.acc_factor == 12)]
+    acc_factors = globus.acc_factor
+    sigma = globus.sigma_rim
+    
     globus_3 = globus[globus.acc_factor == 3].sigma_rim
     globus_12 = globus[globus.acc_factor == 12].sigma_rim
-    print(globus[globus.acc_factor == 12])
     levene = scipy.stats.levene(globus_3, globus_12)
     print(levene)
     ttest = scipy.stats.ttest_ind(globus_3, globus_12)
     print(ttest)
-    linres = scipy.stats.linregress(globus_3, globus_12)
+    linres = scipy.stats.linregress(acc_factors, sigma)
     print(linres)
-    # plt.plot(globus_3.sigma_rim, label='3')
-    # plt.plot(globus_12.sigma_rim, label='12')
-    # plt.legend()
-    # plt.show()
+    
+    plt.plot(acc_factors,sigma, 'o', label='Original data', color='rebeccapurple')
+    plt.plot(acc_factors, linres.intercept + linres.slope*acc_factors, label='Fitted line', color='orange')
+    plt.legend()
+    plt.xticks(acc_factors.unique())
+    plt.ylabel('Sharpness in FWHM')
+    plt.xlabel('Acceleration factor')
+    plt.savefig(f'../../plots_saved/linreg.pdf')
+    plt.show()
 
 def remove_subj(field):
     return field[4:]
@@ -109,6 +118,20 @@ def read_data(subjects):
     
     return df.dropna()
 
+def linreg(df):
+
+    acc_factors = df.acc_factor.unique()
+    globus = df[(df.fields == 'gpl') | (df.fields == 'gpr')]
+    globus_3 = globus[globus.acc_factor == 3].sigma_rim
+
+    # iterate over all acelleration factors after three
+    for a in acc_factors[1:]:
+        print(f'Comparing factor 3 and factor {a}:')
+        globus_a = globus[globus.acc_factor == a].sigma_rim
+        linreg = scipy.stats.linregress(globus_3, globus_a)
+
+        print(linreg)
+        print()
 
 
 if __name__ == '__main__':
