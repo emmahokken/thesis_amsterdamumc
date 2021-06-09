@@ -27,7 +27,7 @@ def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=10, 
         gaus_dilation: smoothed and dilated brain mask
         inv_dilation: inverse of the smoothed and dilated brain mask 
     '''
-    
+
     # dilation parameters 
     kernel = np.ones((kw,kh,kd), dtype=np.uint8)
 
@@ -41,17 +41,13 @@ def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=10, 
     # dilate brain mask and correct to 1 (was 0.999...)
     dilation = ndimage.binary_dilation(brain_mask, kernel, iterations=iters)
     dilation[dilation > 0] = 1
-
-    # plt.imshow(dilation[:,130,:])
-    # plt.show()
     
     # smooth edges
     gaus_dilation = cv2.GaussianBlur(np.float32(dilation), (5, 5), 0)
 
     # create inverse mask of dilatio
-    inv_dilation = abs(gaus_dilation - 1)
-    inv_dilation[inv_dilation < 1] = 0
-    
+    inv_dilation = np.ones(dilation.shape) - gaus_dilation
+
     gaus_dilation = np.moveaxis(gaus_dilation, 2, 0)
     inv_dilation = np.moveaxis(inv_dilation, 2, 0)
 

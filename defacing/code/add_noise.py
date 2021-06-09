@@ -31,15 +31,18 @@ def main_defacing(r_outer, r_inner, plot=False):
     subjects = ['0004', '0016', '0067', '0083']
 
     for d in tqdm(directories): 
-        # print(d)
+        
         # if not any(x in d for x in subjects):
         #     continue
 
         # get dilated brain mask for defacing and reorient axes
-        dilation, inv_dilation = dilate(f'{root_path}{d}', f'{save_path}{d}')
-        
-
-        # iterate over the four echo times
+        dilation, inv_dilation = dilate(file_path=f'{root_path}{d}', 
+                                        save_path=f'{save_path}{d}', 
+                                        save_mask=True, 
+                                        kw=5, kh=5, kd=5, 
+                                        iters=10)
+    
+        # iterate over the four echo timesp
         for echo in range(1,5):
             # print('Echo:', echo)
             file = f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz'
@@ -145,7 +148,7 @@ def create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=False):
 if __name__ == '__main__':
     
     # TODO: add argparse? 
-    
+
     r_outer = 117
     r_inner = 90
 

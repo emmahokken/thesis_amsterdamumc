@@ -7,6 +7,8 @@ from scipy import ndimage
 import sys 
 from tqdm import tqdm 
 
+import pandas as pd 
+
 def check_noise(plot=False):
     prefix = '../../../../../..'
     root_path = prefix + '/data/projects/ahead/raw_gdata/'
@@ -23,16 +25,27 @@ def check_noise(plot=False):
     s = 140
     zeroes = np.zeros(32)
 
-    overall_difference_real = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
-    overall_difference_imag = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
-    overall_percent_real = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
-    overall_percent_imag = {1:zeroes, 2:zeroes, 3:zeroes, 4:zeroes}
+    overall_difference_real = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
+    overall_difference_imag = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
+    overall_percent_real = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
+    overall_percent_imag = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
+
+    df = pd.DataFrame(columns=['subj', 'echo', 'coil', 'diff_real', 'diff_imag','perc_real','perc_imag'])
 
     for d in tqdm(directories):
+        print(d)
+        if not '27_025' in d:
+            continue
         for echo in range(1,5):
+            data = {'subj': np.full(32,int(d.split('_')[1])), 'echo':np.full(32,echo), 'coil': range(1,33)}
+            
+            # try: 
             original = nib.load(f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz').get_fdata(dtype=np.complex64)
             defaced = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_defaced.nii.gz').get_fdata(dtype=np.complex64)
-            # no_noise = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_no_noise.nii.gz').get_fdata(dtype=np.complex64)
+            no_noise = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_no_noise.nii.gz').get_fdata(dtype=np.complex64)
+            # except:
+            #     print(d)
+            #     continue
 
             x, y, z = original.shape[:3]       
 
@@ -59,34 +72,22 @@ def check_noise(plot=False):
                 difference_real.append(std_real_def - std_real_orig)
                 difference_imag.append(std_imag_def - std_imag_orig)
 
-
                 p_real = ((std_real_def - std_real_orig) / ((std_real_def + std_real_orig) / 2)) * 100
                 p_imag = ((std_imag_def - std_imag_orig) / ((std_imag_def + std_imag_orig) / 2)) * 100
                 percent_real.append(p_real)
                 percent_imag.append(p_imag)
 
 
-            # save overal difference statistics for plotting 
-            overall_difference_real[echo] += difference_real
-            overall_difference_imag[echo] += difference_imag
-            overall_percent_real[echo] += percent_real
-            overall_percent_imag[echo] += percent_imag
+            data['diff_real'] = difference_real
+            data['diff_imag'] = difference_imag
+            data['perc_real'] = percent_real
+            data['perc_imag'] = percent_imag
 
-       
-        # print(np.mean(percent_real), np.mean(percent_imag))
+            df = df.append(pd.DataFrame(data),ignore_index=True)
 
-
-    for echo in range(1,5):
-        overall_difference_real[echo] /= len(directories)
-        overall_difference_imag[echo] /= len(directories)
-        overall_percent_real[echo] /= len(directories)
-        overall_percent_imag[echo] /= len(directories)
-
-        plot_difference_bar(overall_difference_real[echo], overall_difference_imag[echo], echo)
-        plot_difference_bar(overall_percent_real[echo], overall_percent_imag[echo], echo, percent=True)
-
-        print('Overall difference mean')
-        print('Real:', np.mean(overall_percent_real[echo]), 'Imaginary:', np.mean(overall_percent_imag[echo]))
+    print(df)
+    breakpoint()
+    # df.to_csv('defacing_background_noise_27.csv')
 
 
 def plot_defacing_comparison(original, no_noise, defaced, s, coil=7):
@@ -105,29 +106,6 @@ def plot_defacing_comparison(original, no_noise, defaced, s, coil=7):
     plt.colorbar(shrink=0.5)
     plt.show()
 
-def plot_difference_bar(difference_real, difference_imag, echo, percent=False):
-    ''' Plots a bar graph showing the difference in background noise for the orignal and the defaced image. '''
-
-    x = np.arange(len(difference_real))
-    w = 0.35
-
-    fig, ax = plt.subplots()
-    fig.set_figwidth(10)
-    rec1 = ax.bar(x - w/2, difference_real, w, label='Real', color='rebeccapurple')
-    rec2 = ax.bar(x + w/2, difference_imag, w, label='Imaginary', color='orange')
-
-    ax.set_xticks(x)
-    ax.set_xlabel('Coils')
-
-    ax.legend()
-    if percent:
-        ax.set_ylabel('% difference')
-        plt.savefig(f'../results/figures/background_noise_percent_difference_{echo}.pdf')
-    else:
-        ax.set_ylabel('STD Difference')
-        plt.savefig(f'../results/figures/background_noise_std_difference_{echo}.pdf')
-
-    plt.show()
 
 def plot_noise_box(original, n, coil=7):
     ''' Plots a box from which the noise in compared. '''
@@ -140,6 +118,7 @@ def plot_noise_box(original, n, coil=7):
     ax.add_patch(rect)
     ax.axis('off')
     plt.show()
+
 
 if __name__ == '__main__':
     check_noise(plot=False)
