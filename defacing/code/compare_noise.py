@@ -10,10 +10,14 @@ def main():
     
     # load in data
     df = pd.read_csv('../results/files/defacing_background_noise.csv')
-    
+    print(df.columns)
     print('Mean difference', df.perc_real.mean(),df.perc_imag.mean())
     print('Significant difference between real and imaginary?', stats.ttest_ind(df.perc_real, df.perc_imag))
-
+    print('Significant difference between original and defaced', stats.ttest_ind(df.std_real_orig, df.std_real_def))
+    print('Significant difference between original and defaced', stats.ttest_ind(df.std_imag_orig, df.std_imag_def))
+    print('Levene', stats.levene(df.std_real_orig, df.std_real_def))
+    print('Levene part 2', stats.levene(df.std_imag_orig, df.std_imag_def))
+   
     # iterate over coils
     for e in df.echo.unique():
         differences = pd.DataFrame()
@@ -64,7 +68,7 @@ def plot_difference_bar(difference_real, difference_imag, echo, percent=False):
         ax.set_ylabel('STD Difference')
         plt.savefig(f'../results/figures/background_noise_std_difference_{echo}.pdf')
 
-    # plt.show()
+    plt.show()
 
 def plot_noise_boundary():
     prefix = '../../../../../..'

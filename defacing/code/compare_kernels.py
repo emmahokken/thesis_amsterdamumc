@@ -21,34 +21,48 @@ def main():
     scan_type = 't1corr'
     brain_mask_type = 'mask_inv2_te2_m_corr'
     save_path = '../defacing/dilation'
-    subject = 'Subcortex_0005_002_R02'
+    subject_5 = 'Subcortex_0005_002_R02'
+    subject_8 = 'Subcortex_0008_006_R02'
+    subject_64 = 'Subcortex_0064_064_R02'
 
     kernel_five = np.ones((5,5), dtype=np.uint8)
     kernel_fifty = np.ones((50,50), dtype=np.uint8)
 
-    brain_mask_path = f'{root_path}/{subject}/nii/{brain_mask_type}.nii'
-    scan_path = f'{root_path}/{subject}/nii/{scan_type}.nii'
+    brain_mask_path_5 = f'{root_path}/{subject_5}/nii/{brain_mask_type}.nii'
+    scan_path_5 = f'{root_path}/{subject_5}/nii/{scan_type}.nii'
+    brain_mask_path_8 = f'{root_path}/{subject_8}/nii/{brain_mask_type}.nii'
+    scan_path_8 = f'{root_path}/{subject_8}/nii/{scan_type}.nii'
+    brain_mask_path_64 = f'{root_path}/{subject_64}/nii/{brain_mask_type}.nii'
+    scan_path_64 = f'{root_path}/{subject_64}/nii/{scan_type}.nii'
 
     # load in brain mask (in two steps for saving later)
-    brain_mask_nii = nib.load(brain_mask_path)
+    brain_mask_nii = nib.load(brain_mask_path_5)
     brain_mask = brain_mask_nii.get_fdata()
-    inv2_nii = nib.load(scan_path)
-    inv2 = inv2_nii.get_fdata()
+    inv2_nii = nib.load(scan_path_5)
+    inv2_5 = inv2_nii.get_fdata()
+    inv2_nii = nib.load(scan_path_8)
+    inv2_8 = inv2_nii.get_fdata()
+    inv2_nii = nib.load(scan_path_64)
+    inv2_64 = inv2_nii.get_fdata()
     # inv2 = np.moveaxis(inv2, 2, 0)
     # brain_mask = np.moveaxis(brain_mask, 2, 0)
 
     # dilate brain mask and fill in with (second inversion) scan 
-    dilation_five, inv_five = dilate(f'{root_path}/{subject}', save_mask=False, iters=5)
-    dilation_ten, inv_ten = dilate(f'{root_path}/{subject}', save_mask=False,iters=10)
-    dilation_fifteen, inv_fifteen = dilate(f'{root_path}/{subject}', save_mask=False, iters=15)
-    dilation_twenty, inv_twenty = dilate(f'{root_path}/{subject}', save_mask=False, iters=20)
+    dilation_five, inv_five = dilate(f'{root_path}/{subject_5}', save_mask=False, iters=5)
+    dilation_ten_5, inv_ten = dilate(f'{root_path}/{subject_5}', save_mask=False,iters=10)
+    dilation_fifteen, inv_fifteen = dilate(f'{root_path}/{subject_5}', save_mask=False, iters=15)
+    dilation_twenty, inv_twenty = dilate(f'{root_path}/{subject_5}', save_mask=False, iters=20)
 
-    plot_different_planes(dilation_ten, brain_mask, '../results/figures/dilation_different_planes_scipy_mask.pdf')
-    plot_different_planes(dilation_ten, inv2, '../results/figures/dilation_different_planes_scipy_scan.pdf')
-    plot_different_iterations_sagital(brain_mask, dilation_five, dilation_ten, dilation_fifteen, dilation_twenty, inv2, '../results/figures/kernel_iters=5-20_sagital.pdf')
-    plot_different_iterations_coronal(brain_mask, dilation_five, dilation_ten, dilation_fifteen, dilation_twenty, inv2, '../results/figures/kernel_iters=5-20_coronal.pdf')
+    dilation_ten_8, inv_ten = dilate(f'{root_path}/{subject_8}', save_mask=False,iters=10)
+    dilation_ten_64, inv_ten = dilate(f'{root_path}/{subject_64}', save_mask=False,iters=10)
 
-    compare_kernels(dilation_five, dilation_twenty, '../results/figures/dilation_kernel_comparison.pdf')
+    # plot_different_planes(dilation_ten_5, brain_mask, '../results/figures/dilation_different_planes_scipy_mask.pdf')
+    # plot_different_planes(dilation_ten_5, inv2_5, '../results/figures/dilation_different_planes_scipy_scan.pdf')
+    # plot_different_iterations_sagital(brain_mask, dilation_five, dilation_ten_5, dilation_fifteen, dilation_twenty, inv2_5, '../results/figures/kernel_iters=5-20_sagital.pdf')
+    # plot_different_iterations_coronal(brain_mask, dilation_five, dilation_ten_5, dilation_fifteen, dilation_twenty, inv2_5, '../results/figures/kernel_iters=5-20_coronal.pdf')
+    plot_different_subjects(dilation_ten_5, dilation_ten_8, dilation_ten_64, inv2_5, inv2_8, inv2_64, '../results/figures/dilation_different_subjects.pdf')
+
+    # compare_kernels(dilation_five, dilation_twenty, '../results/figures/dilation_kernel_comparison.pdf')
 
 def compare_kernels(kernel1, kernel2, save_path):
     '''
@@ -189,6 +203,24 @@ def plot_different_iterations_sagital(brain_mask, dilation1, dilation2, dilation
     plt.imshow(ndimage.rotate((brain)[:,:,s], 90), cmap='gray')
     plt.axis('off')
     plt.title('Full image')
+    plt.savefig(save_path)
+    plt.show()
+
+def plot_different_subjects(dilation_ten_5, dilation_ten_8, dilation_ten_64, inv2_5, inv2_8, inv2_64, save_path):
+    s = 140
+
+    plt.subplot(131)
+    plt.imshow(ndimage.rotate((inv2_5*dilation_ten_5)[:,:,s], 90), cmap='gray')
+    plt.axis('off')
+    # plt.title('Brain mask')
+    plt.subplot(132)
+    plt.imshow(ndimage.rotate((inv2_8*dilation_ten_8)[:,:,s], 90), cmap='gray')
+    plt.axis('off')
+    # plt.title('5 iterations')
+    plt.subplot(133)
+    plt.imshow(ndimage.rotate((inv2_64*dilation_ten_64)[:,:,s], 90), cmap='gray')
+    plt.axis('off')
+    # plt.title('10 iterations')
     plt.savefig(save_path)
     plt.show()
 

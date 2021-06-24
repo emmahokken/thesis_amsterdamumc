@@ -33,19 +33,19 @@ def check_noise(plot=False):
     df = pd.DataFrame(columns=['subj', 'echo', 'coil', 'diff_real', 'diff_imag','perc_real','perc_imag'])
 
     for d in tqdm(directories):
-        print(d)
-        if not '27_025' in d:
-            continue
+        # print(d)
+        # if not '27_025' in d:
+        #     continue
         for echo in range(1,5):
             data = {'subj': np.full(32,int(d.split('_')[1])), 'echo':np.full(32,echo), 'coil': range(1,33)}
             
-            # try: 
-            original = nib.load(f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz').get_fdata(dtype=np.complex64)
-            defaced = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_defaced.nii.gz').get_fdata(dtype=np.complex64)
-            no_noise = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_no_noise.nii.gz').get_fdata(dtype=np.complex64)
-            # except:
-            #     print(d)
-            #     continue
+            try: 
+                original = nib.load(f'{root_path}{d}/{d}_inv2_{echo}_gdataCorrected.nii.gz').get_fdata(dtype=np.complex64)
+                defaced = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_defaced.nii.gz').get_fdata(dtype=np.complex64)
+                no_noise = nib.load(f'{save_path}{d}/{d}_inv2_{echo}_gdataCorrected_no_noise.nii.gz').get_fdata(dtype=np.complex64)
+            except:
+                print(d)
+                continue
 
             x, y, z = original.shape[:3]       
 
@@ -53,16 +53,26 @@ def check_noise(plot=False):
             difference_imag = []
             percent_real = []
             percent_imag = []
+            all_std_real_orig = []
+            all_std_imag_orig = []
+            all_std_real_def = []
+            all_std_imag_def = []
+            
 
             for coil in range(original.shape[3]):
                 # print('Coil:', coil + 1)
 
                 # compute std for both imageinary and real channels from original and defaced 
-                std_real_orig = np.std(original[x-n:,y-n:,z-n:, coil].real)
-                std_imag_orig = np.std(original[x-n:,y-n:,z-n:, coil].imag)
+                std_real_orig = np.std(original[0:n,0:n,z-n:, coil].real)
+                std_imag_orig = np.std(original[0:n,0:n,z-n:, coil].imag)
 
-                std_real_def = np.std(defaced[x-n:,y-n:,z-n:, coil].real)
-                std_imag_def = np.std(defaced[x-n:,y-n:,z-n:, coil].imag)
+                std_real_def = np.std(defaced[0:n,0:n,z-n:, coil].real)
+                std_imag_def = np.std(defaced[0:n,0:n,z-n:, coil].imag)
+
+                all_std_real_orig.append(std_real_orig)
+                all_std_imag_orig.append(std_imag_orig)
+                all_std_real_def.append(std_real_def)
+                all_std_imag_def.append(std_imag_def)
 
                 # print('Original:')
                 # print('Real:', std_real_orig, 'Imaginary:', std_imag_orig)
@@ -83,11 +93,15 @@ def check_noise(plot=False):
             data['perc_real'] = percent_real
             data['perc_imag'] = percent_imag
 
+            data['std_real_orig'] = all_std_real_orig
+            data['std_imag_orig'] = all_std_imag_orig
+            data['std_real_def'] = all_std_real_def
+            data['std_imag_def'] = all_std_imag_def
+
+
             df = df.append(pd.DataFrame(data),ignore_index=True)
 
-    print(df)
-    breakpoint()
-    # df.to_csv('defacing_background_noise_27.csv')
+    df.to_csv('defacing_background_noise_adjusted_box.csv')
 
 
 def plot_defacing_comparison(original, no_noise, defaced, s, coil=7):

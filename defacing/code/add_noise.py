@@ -31,7 +31,10 @@ def main_defacing(r_outer, r_inner, plot=False):
     subjects = ['0004', '0016', '0067', '0083']
 
     for d in tqdm(directories): 
-        
+        print(d)
+        if '0008' not in d:
+            continue
+        # exit()
         # if not any(x in d for x in subjects):
         #     continue
 
@@ -125,6 +128,8 @@ def create_kspace_mask(data, kspace, r_outer, r_inner, s, plot=False):
     h, w = data.shape[:2]
     y, x = np.ogrid[:h, :w]
 
+    # https://stackoverflow.com/questions/49330080/numpy-2d-array-selecting-indices-in-a-circle 
+    # https://stackoverflow.com/questions/44865023/how-can-i-create-a-circular-mask-for-a-numpy-array 
     circ_mask = np.sqrt((x-y_mid)**2 + (y-x_mid)**2) < r_outer
     circ_mask_inner = np.sqrt((x- y_mid)**2 + (y- x_mid)**2) < r_inner
     circ_mask[circ_mask_inner] = 0 
