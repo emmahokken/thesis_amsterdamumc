@@ -1,4 +1,4 @@
-function [ map_rim, subj_data_rim, map_gt, subj_data_gt, MPos,voxRes] = getdata( FileID, subjdir, varargin)
+function [ map_rim, subj_data_corr, map_gt, subj_data_uncorr, MPos,voxRes] = getdata( FileID, subjdir, varargin)
 % Get data for FileID. Output: label map (distance transform), t1_corr
 % data, r1/t1_uncorr data and MPos motion parameters.
 %
@@ -53,14 +53,14 @@ for iROI = 1:length(FileID.uROIs)
         
         % Load uncorrected and corrected data
         cd(datadir)  
-        filenamerim = [FileID.uIDs{1}, '_', FileID.type{1},'_rim_', FileID.accFactor{1},'.nii'];
-        tmp=load_untouch_nii(filenamerim);
+        filenamecorr = [FileID.uIDs{1}, '_', FileID.type{1},'_rim_', FileID.accFactor{1},'.nii'];
+        tmp=load_untouch_nii(filenamecorr);
         voxRes=double(tmp.hdr.dime.dim(2:4));
-        subj_data_rim.(nm)=flip(tmp.img,2);
+        subj_data_corr.(nm)=flip(tmp.img,2);
        
-        filenamegt = [FileID.uIDs{1},'_',FileID.type{1},'_gt.nii'];
-        tmp=load_untouch_nii(filenamegt);
-        subj_data_gt.(nm)=flip(tmp.img,2);
+        filenameuncorr = [FileID.uIDs{1},'_',FileID.type{1},'_gt.nii'];
+        tmp=load_untouch_nii(filenameuncorr);
+        subj_data_uncorr.(nm)=flip(tmp.img,2);
         
         % Load label map (assuming corrected and uncorrected maps identical)
         if strcmp(FileID.uROIs{iROI},cortag)

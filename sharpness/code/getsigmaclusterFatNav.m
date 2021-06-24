@@ -4,6 +4,8 @@ warning off
 
 mapInf=1e3; % map padding zeros saturation value
 
+rng(42);
+
 %% Preparation for clustering
 % Load parameters
 border_distance = pars.border_distance;
@@ -83,6 +85,8 @@ kmeans_file = strcat('../variables/', field_name, '_kmeans_vars.mat');
 
 % Perform clustering if file does not exist 
 if isfile(kmeans_file) == 0
+    disp('we are doing it again')
+    return
     % First kmeans-clustering: on intensity value
     ind_R3 = kmeans(cat(2,coords_R3,I_R3_sm),k_R3, 'MaxIter', 1000, 'Replicates', 10);
     ind_R3subcl = ind_R3; % used for subclustering.
@@ -112,6 +116,7 @@ end
 
 % Load variables from file to ensure stable kmeans clustering over
 % accelrration factors 
+ind_R3subcl = []; k_subcl = []; I_inds = [];
 load(kmeans_file);
 
 k_tot = sum(k_subcl);
@@ -211,7 +216,7 @@ for p = 1:2
         i_max = k_tot;
     end
     for i = 1:i_max
-        subplot_tight(4,5,i,.02)
+        subplot_tight(4,5,i)
         plot(prof_fit{i}(:,1),prof_fit{i}(:,2),'.','color',colors(valid(i)+1,:), ...
           'markersize',2)
         hold on
@@ -219,10 +224,10 @@ for p = 1:2
         set(h,'color',lcolors(valid(i)+1,:))
         axis([-3 4 -.5 1.5])
         legend('hide')
-        xlabel(''); ylabel('')
+        xlabel(' '); ylabel(' ')
     end
     name = [field_name, '_',ctag,'_profiles'];
-    filename = fullfile(plotsavedir,[name '.png']);
+    filename = fullfile(plotsavedir,[name '.jpg']);
     disp(['Creating ' filename])
     print(filename,'-dpng','-r300')
     close(f)

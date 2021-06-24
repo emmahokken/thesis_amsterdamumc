@@ -2,10 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd 
 import scipy 
+import seaborn as sns 
 
-
-def return_one(x):
-    return 1
     
 def plot_fwhm_per_subject(df, subj):
     '''
@@ -73,11 +71,11 @@ def plot_per_region(df, version):
     acc_factors[0] = 1
     plt.legend(bbox_to_anchor=(1.05,1),loc='upper left')
     plt.xticks(ticks=[0,3,6,9,12],labels=acc_factors)
-    plt.xlabel('Acceleration rate')
+    plt.xlabel('Acceleration factor')
     plt.ylabel('Sharpness in FWHM')
-    plt.title(f'Sharpness of different ROIs over acceleration rates')
+    plt.title(f'Sharpness of different ROIs over acceleration factors')
     plt.tight_layout()
-    # plt.savefig(f'../../plots_saved/FWHM_per_region_{version}.pdf')
+    plt.savefig(f'../../plots_saved/FWHM_per_region_{version}.pdf')
     plt.show()
 
 
@@ -89,13 +87,6 @@ def boxplot(df):
         df: DataFrame object containing FWHM information
     '''
 
-
-    sigma_rim = df.drop(columns=['sigma_gt'])
-    sigma_gt = df[df.acc_factor == 3].drop(columns=['sigma_rim'])
-    sigma_gt.acc_factor = sigma_gt.acc_factor.apply(return_one)
-    sigma_gt = sigma_gt.rename(columns={'sigma_gt': 'sigma_rim'})
-    df = pd.concat([sigma_gt, sigma_rim])
-
     df.boxplot(column=['sigma_rim'],by='acc_factor', grid=True, boxprops=dict(color='orange'),whiskerprops=dict(color='orange'),medianprops=dict(color='rebeccapurple'))
     plt.title('Distribution of sharpness in FWHM per acceleration factor.')
     plt.suptitle('')
@@ -103,20 +94,7 @@ def boxplot(df):
     plt.ylabel('Sharpness in FWHM')
     plt.savefig(f'../../plots_saved/FWHM_boxplot.pdf')
     plt.show()
-
-    sigma = df.sigma_rim
-    acc_factors = df.acc_factor
-    linres = scipy.stats.linregress(acc_factors, sigma)
-    print(linres)
     
-    plt.plot(acc_factors,sigma, 'o', label='Original data', color='rebeccapurple')
-    plt.plot(acc_factors, linres.intercept + linres.slope*acc_factors, label='Fitted line', color='orange')
-    plt.legend()
-    plt.xticks(acc_factors.unique())
-    plt.ylabel('Sharpness in FWHM')
-    plt.xlabel('Acceleration factor')
-    plt.savefig(f'../../plots_saved/linreg.pdf')
-    plt.show()
 
 def scatter_fwhm(df):
 

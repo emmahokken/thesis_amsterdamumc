@@ -108,12 +108,12 @@ i=iSubj;
       plot_motion = cat(2,plot_motion,mot_mean_plot);
       plot_sigma_rim = cat(2,plot_sigma_rim,sigm_rim);
       plot_sigma_gt = cat(2,plot_sigma_gt,sigm_gt);
-      hold off
-      plot(plot_sigma_rim);
-      hold on
-      plot(plot_sigma_gt);
-      legend('rim', 'gt');
-      hold off
+%       hold off
+%       plot(plot_sigma_rim);
+%       hold on
+%       plot(plot_sigma_gt);
+%       legend('rim', 'gt');
+%       hold off
   end
   
   allsigma = cat(2,allsigma,plot_sigma);
@@ -125,19 +125,24 @@ i=iSubj;
 csigma=csigma(doSubj); cu=cu(doSubj);
 
 %% Plot stats
+plotfields = {};
+for i =1:length(fields)
+    plotfields{i} = fields{i}(5:end);
+end
 
-% barColors = {[102 51 153] / 255, [255 191 0] / 255};
-% b = bar(categorical(fields),[allsigmagt;allsigmarim].');
-% set(b,{'DisplayName'},{'Ground truth','RIM'}')
-% legend()
-% for i =1:2
-%     set(b(i),'CData',barColors{i});
-%     set(b(i),'FaceColor','flat');
-% end
-% title(strcat('FWHM of different structures for', {' '},FileID.accFactor{1}, 'x acceleration'));
-% ylabel('Sharpness in FWHM')
-% barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
-% saveas(gcf,barFileName);
+barColors = {[102 51 153] / 255, [255 165 0] / 255};
+figure('visible', 'off');
+b = bar(categorical(plotfields),[allsigmagt;allsigmarim].');
+set(b,{'DisplayName'},{'Ground truth','RIM'}')
+legend()
+for i =1:2
+    set(b(i),'CData',barColors{i});
+    set(b(i),'FaceColor','flat');
+end
+title(strcat('FWHM of different structures for', {' '},FileID.accFactor{1}, 'x acceleration'));
+ylabel('Sharpness in FWHM')
+barFileName = strcat('../../plots_saved/', FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_barchart.png');
+saveas(gcf,barFileName);
 
 %% Display stats
 
@@ -162,19 +167,14 @@ disp(num2str(relvalid'))
 %% Create table for satistical analysis 
 
 % Write ground truth data once to file 
-if FileID.accFactor{1} == '3'
-    sigma = reshape(allsigmagt,[],1);
-    acc_factor = zeros(size(sigma));
-    subj_id = zeros(size(sigma));
-    subj_id(subj_id==0) = str2num(FileID.uIDs{1});
-    tabl = table(subj_id, fields, sigma, acc_factor)
-    writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_0_FWHM_new.csv'),'WriteRowNames',true)
-end 
-sigma = reshape(allsigmarim,[],1);
-acc_factor = zeros(size(sigma));
+
+sigma_rim = reshape(allsigmarim,[],1);
+sigma_gt = reshape(allsigmagt,[],1);
+
+acc_factor = zeros(size(sigma_rim));
 acc_factor(acc_factor==0) = str2num(FileID.accFactor{1});
-subj_id = zeros(size(sigma));
+subj_id = zeros(size(sigma_rim));
 subj_id(subj_id==0) = str2num(FileID.uIDs{1});
 
-tabl = table(subj_id,fields, sigma, acc_factor)
-writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM_new.csv'),'WriteRowNames',true)
+tabl = table(subj_id,fields, sigma_rim, sigma_gt, acc_factor)
+writetable(tabl,strcat('../../results/',FileID.uIDs{1},'_',FileID.accFactor{1},'_FWHM.csv'),'WriteRowNames',true)
