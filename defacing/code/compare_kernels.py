@@ -56,13 +56,13 @@ def main():
     dilation_ten_8, inv_ten = dilate(f'{root_path}/{subject_8}', save_mask=False,iters=10)
     dilation_ten_64, inv_ten = dilate(f'{root_path}/{subject_64}', save_mask=False,iters=10)
 
-    # plot_different_planes(dilation_ten_5, brain_mask, '../results/figures/dilation_different_planes_scipy_mask.pdf')
-    # plot_different_planes(dilation_ten_5, inv2_5, '../results/figures/dilation_different_planes_scipy_scan.pdf')
-    # plot_different_iterations_sagital(brain_mask, dilation_five, dilation_ten_5, dilation_fifteen, dilation_twenty, inv2_5, '../results/figures/kernel_iters=5-20_sagital.pdf')
-    # plot_different_iterations_coronal(brain_mask, dilation_five, dilation_ten_5, dilation_fifteen, dilation_twenty, inv2_5, '../results/figures/kernel_iters=5-20_coronal.pdf')
+    plot_different_planes(dilation_ten_5, brain_mask, '../results/figures/dilation_different_planes_scipy_mask.pdf')
+    plot_different_planes(dilation_ten_5, inv2_5, '../results/figures/dilation_different_planes_scipy_scan.pdf')
+    plot_different_iterations_sagittal(brain_mask, dilation_five, dilation_ten_5, dilation_fifteen, dilation_twenty, inv2_5, '../results/figures/kernel_iters=5-20_sagittal.pdf')
+    plot_different_iterations_coronal(brain_mask, dilation_five, dilation_ten_5, dilation_fifteen, dilation_twenty, inv2_5, '../results/figures/kernel_iters=5-20_coronal.pdf')
     plot_different_subjects(dilation_ten_5, dilation_ten_8, dilation_ten_64, inv2_5, inv2_8, inv2_64, '../results/figures/dilation_different_subjects.pdf')
 
-    # compare_kernels(dilation_five, dilation_twenty, '../results/figures/dilation_kernel_comparison.pdf')
+    compare_kernels(dilation_five, dilation_twenty, '../results/figures/dilation_kernel_comparison.pdf')
 
 def compare_kernels(kernel1, kernel2, save_path):
     '''
@@ -100,7 +100,7 @@ def plot_different_planes(dilation, brain, save_path):
     z = 74
 
     plt.subplot(231)
-    plt.title('Sagital view')
+    plt.title('Sagittal view')
     plt.imshow(ndimage.rotate((brain)[:,:,z],90), cmap='gray', aspect='auto')
     plt.xticks([])
     plt.yticks([])
@@ -167,7 +167,7 @@ def plot_different_iterations_coronal(brain_mask, dilation1, dilation2, dilation
     plt.savefig(save_path)
     plt.show()
 
-def plot_different_iterations_sagital(brain_mask, dilation1, dilation2, dilation3, dilation4, brain, save_path):
+def plot_different_iterations_sagittal(brain_mask, dilation1, dilation2, dilation3, dilation4, brain, save_path):
     ''' 
     Plots and saves a comparison of different amount of iterations for the dilation algorithm.
 
@@ -212,7 +212,7 @@ def plot_different_subjects(dilation_ten_5, dilation_ten_8, dilation_ten_64, inv
     plt.subplot(131)
     plt.imshow(ndimage.rotate((inv2_5*dilation_ten_5)[:,:,s], 90), cmap='gray')
     plt.axis('off')
-    # plt.title('Brain mask')
+    plt.title('Original image')
     plt.subplot(132)
     plt.imshow(ndimage.rotate((inv2_8*dilation_ten_8)[:,:,s], 90), cmap='gray')
     plt.axis('off')

@@ -48,11 +48,11 @@ def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=10, 
     # create inverse mask of dilatio
     inv_dilation = np.ones(dilation.shape) - gaus_dilation
 
-    # gaus_dilation = np.moveaxis(gaus_dilation, 2, 0)
-    # inv_dilation = np.moveaxis(inv_dilation, 2, 0)
+    gaus_dilation = np.moveaxis(gaus_dilation, 2, 0)
+    inv_dilation = np.moveaxis(inv_dilation, 2, 0)
 
-    # gaus_dilation = np.fliplr(gaus_dilation)
-    # inv_dilation = np.fliplr(inv_dilation)
+    gaus_dilation = np.fliplr(gaus_dilation)
+    inv_dilation = np.fliplr(inv_dilation)
 
     if save_mask:
         nifti_image = nib.Nifti1Image(gaus_dilation, header=brain_mask_nii.header, affine=brain_mask_nii.affine)
