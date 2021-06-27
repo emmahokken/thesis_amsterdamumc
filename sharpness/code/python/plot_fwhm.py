@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt 
+import nibabel as nib 
 import numpy as np
 import pandas as pd 
 import scipy 
@@ -100,8 +101,20 @@ def scatter_fwhm(df):
 
     three = df[(df.acc_factor == 3) & ((df.fields == 'gpl') | (df.fields == 'gpr'))].sigma_rim
     twelve = df[(df.acc_factor == 12) & ((df.fields == 'gpl') | (df.fields == 'gpr'))].sigma_rim
-    print(len(three))
-    print(len(twelve))
+  
     # return
     plt.scatter(three[:len(twelve)],twelve, color='rebeccapurple')
     plt.show()
+
+def plot_levelmap():
+
+    s = 32
+    lvl_map = '../../data/segm/sub-008_mask-vent_hem-l_lvlreg-gt_def-img.nii'
+    lvl_map = nib.load(lvl_map).get_fdata()
+    print(lvl_map.shape)
+    plt.imshow(lvl_map[:,:,25], cmap='viridis')
+    plt.title('Levelmap for the left ventricle')
+    plt.colorbar()
+    plt.savefig('../../plots_saved/levelmap_ventl.pdf')
+    plt.show()
+    exit()

@@ -14,7 +14,7 @@
 %    MATLAB fitting and image processing toolboxes
 %    load_untouch_nii.m for loading nifti files
 %
-% Matthan Caan, 2020
+% Matthan Caan, 1988
 % Amsterdam UMC
 
 %% setup
@@ -36,15 +36,15 @@ mkdir(plotsavedir)
 %% Get data
 
 % define some subject ID
-% FileID.subjectIDs={'005','008','018','025','031','064','077','098','105'};
-FileID.subjectIDs={'105','098'};
+% FileID.subjectIDs={'005','008','018','025','031','064','077','105','098'};
+FileID.subjectIDs={'098','018','077','064', '098'};
 FileID.type={'r2star'};
 FileID.accFactors={'3','6','9','12'};
 
 % define ROIs to process
 % FileID.uROIs = {'vent', 'tha', 'str','gwb'};
-% FileID.uROIs = {'vent', 'tha', 'str', 'gp'};
-FileID.uROIs = {'str'};
+FileID.uROIs = {'vent', 'tha', 'str','gp'};
+% FileID.uROIs = {'gp'};
 FileID.uHEMs = {'l', 'r','4'};
 
 % Iterate over all subjects

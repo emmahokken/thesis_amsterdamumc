@@ -15,8 +15,9 @@ from plot_fwhm import *
 
 def main():
     subjects = [5, 8, 18, 25, 31, 64, 77, 98, 105]
-    # subjects = [5,8]
     
+    plot_levelmap()
+
     # gather data
     df = read_data(subjects)
 
@@ -40,14 +41,9 @@ def main():
     # plot_per_region(df.loc[df.fields != 'vent4'], 'rim')
     boxplot(df)
     # scatter_fwhm(df)
-    # for s in subjects:
-    #     a = df.loc[(df.fields == 'strr') & (df.subj_id == s)]
-    #     print(a)
-    #     plt.plot(a.sigma_gt)
-    #     plt.show()
-
+   
     # plt.hist(df.loc[df.acc_factor == 6].sigma_rim, color='rebeccapurple')
-    # plt.title('Histogram of FWHM for reconstructed image,s all acceleration rates')
+    # plt.title('Histogram of FWHM for reconstructed images, all acceleration factors')
     # plt.show()
     # print(scipy.stats.normaltest(df.loc[df.acc_factor == 6].sigma_gt))
     # rmanova(df.dropna())
