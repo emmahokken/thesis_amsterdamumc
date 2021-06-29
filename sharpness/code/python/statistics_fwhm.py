@@ -1,10 +1,7 @@
-import csv 
-from collections import defaultdict
 import matplotlib.pyplot as plt 
 import numpy as np 
 import pandas as pd 
 import scipy
-from statsmodels.stats.anova import AnovaRM 
 import seaborn as sns 
 from sklearn.model_selection import train_test_split
 from sklearn import linear_model
@@ -64,19 +61,6 @@ def determine_outliers(df):
 
     return df 
             
-
-def rmanova(df):
-    '''
-    Perform a repeated measuers ANOVA
-
-    Args:
-        df: DataFrame object containing FWHM information
-    '''
-    df = df.drop(columns=['sigma_gt'])
-    # print(df)
-    rmanova = AnovaRM(data=df, depvar='sigma_rim', subject='subj_id', within=['acc_factor','fields']).fit()
-    print(rmanova)
-
 def t_test(df):
     ''' Perform a t-test on the data. 
 
@@ -84,30 +68,33 @@ def t_test(df):
         df: DataFrame object containing FWHM information
     '''
     print('\n\nStatistics\n')
-    # df = df[df.subj_id != 105]
-    df = df[df.subj_id != 18]
+
+    df = df[df.subj_id != 18] # insufficient data 
     globus_l = df[df.fields == 'gpl']
     globus_r = df[df.fields == 'gpr']
-    print(globus_l.shape, globus_r.shape)
+
     gp = pd.DataFrame({'gpl':np.array(globus_l.sigma_rim), 'gpr': np.array(globus_r.sigma_rim), 'gp':np.mean(np.array([globus_l.sigma_rim, globus_r.sigma_rim]), axis=0), 'acc_factor':np.array(globus_l.acc_factor), 'subj_id':np.array(globus_l.subj_id)})
+
+    # gather data from different regions into one dataframe 
     tha_l = df[(df.fields == 'thal') & (df.subj_id != 105)]
     tha_r = df[df.fields == 'thar']
     tha = pd.DataFrame({'thal':np.array(tha_l.sigma_rim), 'thar': np.array(tha_r.sigma_rim), 'tha':np.mean(np.array([tha_l.sigma_rim, tha_r.sigma_rim]), axis=0), 'acc_factor':np.array(tha_l.acc_factor), 'subj_id':np.array(tha_l.subj_id)})
+
     vent_l = df[(df.fields == 'ventl') & (df.subj_id != 105) & (df.subj_id != 25) & (df.subj_id != 5)]
     vent_r = df[(df.fields == 'ventr') & (df.subj_id != 8)]
-    print(vent_l, vent_r)
     vent = pd.DataFrame({'ventl':np.array(vent_l.sigma_rim), 'ventr': np.array(vent_r.sigma_rim), 'vent':np.mean(np.array([vent_l.sigma_rim, vent_r.sigma_rim]), axis=0), 'acc_factor':np.array(vent_l.acc_factor), 'subj_id':np.array(vent_l.subj_id)})
+
     str_l = df[(df.fields == 'strl') & (df.subj_id != 105)]
     str_r = df[df.fields == 'strr']
-    print(str_l, str_r)
     stri = pd.DataFrame({'strl':np.array(str_l.sigma_rim), 'strr': np.array(str_r.sigma_rim), 'str':np.mean(np.array([str_l.sigma_rim, str_r.sigma_rim]), axis=0), 'acc_factor':np.array(str_l.acc_factor), 'subj_id':np.array(str_l.subj_id)})
+
     gp = gp.merge(tha, on=['subj_id','acc_factor'], how='outer')
     gp = gp.merge(vent, on=['subj_id','acc_factor'], how='outer')
     globus = gp.merge(stri, on=['subj_id','acc_factor'], how='outer')
 
     
-    sigmas_3 = np.array([globus[globus.acc_factor == 3][f'{region}'].dropna().to_list() for region in ['gp', 'vent', 'tha', 'str']])
-    sigmas_12 = np.array([globus[globus.acc_factor == 12][f'{region}'].dropna().to_list() for region in ['gp', 'vent', 'tha', 'str']])
+    sigmas_3 = np.array([globus[globus.acc_factor == 3][f'{region}'].dropna().to_list() for region in ['gp', 'vent', 'tha', 'str']],dtype=object)
+    sigmas_12 = np.array([globus[globus.acc_factor == 12][f'{region}'].dropna().to_list() for region in ['gp', 'vent', 'tha', 'str']], dtype=object)
     globus_3 = globus[globus.acc_factor == 3].gp
     globus_12 = globus[globus.acc_factor == 12].gp
 
@@ -124,9 +111,19 @@ def t_test(df):
     ttest = scipy.stats.ttest_rel(sigmas_3, sigmas_12)
     print('t_test')
     print(ttest)
+
+    # create histogram of data 
+    plt.hist(sigmas_3, color='rebeccapurple')
+    plt.title('Spread of FWHM for 3x accelerated data')
+    plt.savefig('../../plots_saved/fwhm_histogram_3.pdf')
+    plt.show()
+    plt.hist(sigmas_12, color='rebeccapurple')
+    plt.title('Spread of FWHM for 12x accelerated data')
+    plt.savefig('../../plots_saved/fwhm_histogram_12.pdf')
+    plt.show()
+
+    # significant testing with use of slope 
     slope = []
-    # linres = scipy.stats.linregress(acc_factors, sigma)
-    # print(linres)
     for subj in globus.subj_id.unique():
         for region in ['gp', 'vent', 'tha', 'str']:
             globus_subj = globus[globus.subj_id == subj]
@@ -138,14 +135,8 @@ def t_test(df):
                 b, m = np.polynomial.polynomial.polyfit(acc_factors, fwhm, 1)
                 slope.append(m)
 
-        # plt.plot(acc_factors,gp, 'o')
-        # plt.plot(acc_factors, acc_factors*m + b)
-        # plt.show()
-        
-        # t_test_subj = scipy.stats.ttest_rel(globus_subj[globus_subj.acc_factor == 3].gp, globus_subj[globus_subj.acc_factor == 12].gp)
-        # print(t_test_subj)
+       
     slope_mean = np.mean(slope)
-    # slope = slope +  slope
     print(slope_mean)
     one_sided = scipy.stats.ttest_1samp(slope, 0.0)
     print(one_sided)

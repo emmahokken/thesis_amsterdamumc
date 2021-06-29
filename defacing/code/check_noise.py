@@ -10,32 +10,22 @@ from tqdm import tqdm
 import pandas as pd 
 
 def check_noise(plot=False):
+    ''' Iterates over all defaced files and compute the background noise of a specific region. 
+
+    Args: 
+        plot: boolean determining whether to plot the noise box. 
+    '''
     prefix = '../../../../../..'
     root_path = prefix + '/data/projects/ahead/raw_gdata/'
     save_path = prefix + '/data/projects/ahead/defaced/'
-    
-    subjects = ['0004', '0016', '0083', '0067']
-
-    subj = 'Subcortex_0083_085_R02'
-    directories = [d[1] for d in  os.walk(save_path)][0]
-
+   
     # caclulate for different coils
-    coils = [7,15,23,31]
     n = 50
     s = 140
-    zeroes = np.zeros(32)
-
-    overall_difference_real = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
-    overall_difference_imag = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
-    overall_percent_real = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
-    overall_percent_imag = {1:np.zeros(32), 2:np.zeros(32), 3:np.zeros(32), 4:np.zeros(32)}
-
     df = pd.DataFrame(columns=['subj', 'echo', 'coil', 'diff_real', 'diff_imag','perc_real','perc_imag'])
 
     for d in tqdm(directories):
-        # print(d)
-        # if not '27_025' in d:
-        #     continue
+     
         for echo in range(1,5):
             data = {'subj': np.full(32,int(d.split('_')[1])), 'echo':np.full(32,echo), 'coil': range(1,33)}
             
@@ -73,11 +63,6 @@ def check_noise(plot=False):
                 all_std_imag_orig.append(std_imag_orig)
                 all_std_real_def.append(std_real_def)
                 all_std_imag_def.append(std_imag_def)
-
-                # print('Original:')
-                # print('Real:', std_real_orig, 'Imaginary:', std_imag_orig)
-                # print('Defaced:')
-                # print('Real:', std_real_def, 'Imaginary:', std_imag_def)
 
                 difference_real.append(std_real_def - std_real_orig)
                 difference_imag.append(std_imag_def - std_imag_orig)
