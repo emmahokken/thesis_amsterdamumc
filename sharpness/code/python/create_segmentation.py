@@ -8,8 +8,6 @@ import sys
 from tqdm import tqdm 
 from scipy import ndimage
 
-
-
 def create_segmentation(create_gp=False):
     '''
     Creates levelmap segmentations for 32 new regions. 
