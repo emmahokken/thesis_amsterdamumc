@@ -40,6 +40,12 @@ Sharpness Estimation code and results.
 `code/`: contains code
 
 * `python/` contains Python code 
+	* `change_dimensions.py` small script to change dimensions of R2* maps. 
+	* `check_segmentation.py` checks whether the segmentation and coregistration were successful. 
+	* `create_segmentation.py` coregister scans and create levelmaps from binary segmentation maps.
+	* `move.py` copy files in one directory to another.
+	* `plot_fwhm.py` plots various figures based on the FWHM results. 
+	* `statistics_fwhm.py` perform various statistical analyses, including paired t-test. 
 * `errorFunctionFATNAV.m` contains code that calculates the error function used in the estimation. 
 * `getdataSharpnessFatNav.m` loads the levelmaps and MRI data. 
 * `getmotionFatNat.m` calculates displacement between ground truth and accelerated image.  
