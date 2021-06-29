@@ -25,7 +25,7 @@ def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=10, 
 
     Returns: 
         gaus_dilation: smoothed and dilated brain mask
-        inv_dilation: inverse of the smoothed and dilated brain mask 
+        inv_dilation: inverse of the smoothed and dilated brain mask (used for adding of Gaussian noise to background further in the pipeline)
     '''
 
     # dilation parameters 
