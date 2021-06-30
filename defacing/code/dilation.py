@@ -43,7 +43,8 @@ def dilate(file_path, save_path='', save_mask=True, kw=5, kh=5, kd=5, iters=10, 
     dilation[dilation > 0] = 1
     
     # smooth edges
-    gaus_dilation = cv2.GaussianBlur(np.float32(dilation), (5, 5), 0)
+    # gaus_dilation = cv2.GaussianBlur(np.float32(dilation), (5, 5), 0)
+    gaus_dilation = ndimage.gaussian_filter(np.float32(dilation), 0)
 
     # create inverse mask of dilatio
     inv_dilation = np.ones(dilation.shape) - gaus_dilation

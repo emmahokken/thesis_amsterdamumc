@@ -31,13 +31,7 @@ def main_defacing(r_outer, r_inner, plot=False):
     subjects = ['0004', '0016', '0067', '0083']
 
     for d in tqdm(directories): 
-        print(d)
-        if '0008' not in d:
-            continue
-        # exit()
-        # if not any(x in d for x in subjects):
-        #     continue
-
+        
         # get dilated brain mask for defacing and reorient axes
         dilation, inv_dilation = dilate(file_path=f'{root_path}{d}', 
                                         save_path=f'{save_path}{d}', 
