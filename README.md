@@ -1,4 +1,5 @@
-# MSc AI thesis: 
+# Towards Open-Source MRI Data: Defacing and Sharpness Estimation 
+## MSc AI thesis 
 
 Magnetic Resonance Imaging (MRI) is a widely used tool in both research and clinical settings, with image quality increasing every year. However, the acquisition time of a high-quality MRI can be very long. Accelerated MRI is a method in which this acquisition time is reduced by undersampling the available data points.
 Undersampling causes aliasing, i.e. overlap of regions, and adds noise to the image. A variety of methods are in place to reconstruct the image, with recent years showing a spike in reconstruction methods that utilise Deep Learning. One such method is the Recurrent Inference Machine (RIM).
