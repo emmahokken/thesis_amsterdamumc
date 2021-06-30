@@ -1,0 +1,9 @@
+Matlab Toolboxes:
+- Curve Fitting
+- Image Processing
+- Machine Learning and Statistics
+
+NIFTI toolbox (load_untouch_nii)
+DIPLIB image
+imggaussian 
+
